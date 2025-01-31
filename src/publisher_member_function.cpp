@@ -25,6 +25,26 @@ using namespace std::chrono_literals;
 /* This example creates a subclass of Node and uses std::bind() to register a
  * member function as a callback from the timer. */
 
+#include "raisin_network/network.hpp"
+
+#include "raisin_interfaces/srv/log.hpp"
+#include "raisin_network/node.hpp"
+#include <raisin_interfaces/msg/imu.hpp>
+
+using namespace std::chrono_literals;
+using namespace std::placeholders;  // To make _1, _2, etc., available
+
+void subscriberCallback1(const std::shared_ptr<raisin::raisin_interfaces::msg::Imu> msg)
+{
+  std::cout << "subscriber1 works " << msg->angular_velocity_x << std::endl;
+}
+
+void subscriberCallback2(const std::shared_ptr<raisin::raisin_interfaces::msg::Imu> msg)
+{
+  std::cout << "subscriber2 works " << msg->angular_velocity_x << std::endl;
+}
+
+
 class MinimalPublisher : public rclcpp::Node
 {
 public:
@@ -40,8 +60,8 @@ private:
   void timer_callback()
   {
     auto message = std_msgs::msg::String();
-    message.data = "Hello, world! " + std::to_string(count_++);
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+    // message.data = "Hello, world! " + std::to_string(count_++);
+    // RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     publisher_->publish(message);
   }
   rclcpp::TimerBase::SharedPtr timer_;
@@ -49,10 +69,44 @@ private:
   size_t count_;
 };
 
+
 int main(int argc, char * argv[])
 {
+  std::string clientId = "client";
+  std::string serverId = "server";
+  // Instantiate the raisin::Network object as a client
+  std::vector<std::vector<std::string>> threads = {{"main"}};
+  std::shared_ptr<raisin::Network> clientNetwork = std::make_shared<raisin::Network>(clientId, "test", threads);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+
+  // Attempt to connect to the server
+  std::shared_ptr<raisin::Remote::Connection> connection;
+  if (!connection) {
+    connection = clientNetwork->connect(serverId);
+    std::cerr << "[Client] Failed to connect to server at " << serverId << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  std::cout << "[Client] Connected to server at " << serverId << ". Starting message exchange..." <<
+    std::endl;
+
+  raisin::Node node(clientNetwork);
+
+  auto client = node.createClient<raisin::raisin_interfaces::srv::Log>("vec3", connection, "main");
+  auto client2 = node.createClient<raisin::raisin_interfaces::srv::Log>("vec3", connection, "main");
+
+  auto subscriber1 = node.createSubscriber<raisin::raisin_interfaces::msg::Imu>(
+    "imu", connection, std::bind(
+      subscriberCallback1,
+      _1));
+  auto subscriber2 = node.createSubscriber<raisin::raisin_interfaces::msg::Imu>(
+    "imu", connection, std::bind(
+      subscriberCallback2,
+      _1));
+
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<MinimalPublisher>());
   rclcpp::shutdown();
+
+  node.cleanupResources();
   return 0;
 }
