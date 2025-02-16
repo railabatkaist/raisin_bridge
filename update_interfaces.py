@@ -10,6 +10,7 @@ from raisin_workspace_setup import *
 script_directory = os.path.dirname(os.path.realpath(__file__))
 package_template = os.path.join(script_directory, 'src', 'templates', 'package.xml')
 cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'CMakeLists.txt')
+conversion_template = os.path.join(script_directory, 'src', 'templates', 'conversion.hpp')
 script_directory = os.path.dirname(os.path.realpath(__file__))
 
 def generate_package_xml(project_name, dependencies, destination_dir):
@@ -61,6 +62,19 @@ def create_interface(destination_dir, project_directory):
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', os.path.splitext(os.path.basename(srv_file))[0]).lower()
             snake_str = snake_str.replace("__", "_")
             output_file.write('#include <' + project_name + '/srv/' + snake_str + '.hpp>\n')
+
+
+    with open(os.path.join(destination_dir, 'conversion.hpp'), 'a') as output_file:
+        for msg_file in msg_files:
+            pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', pascal_str).lower()
+            snake_str = snake_str.replace("__", "_")
+            with open(conversion_template, 'r') as template_file:
+                conversion_content = template_file.read()
+            conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
+            conversion_content = conversion_content.replace('@@TYPE_PASCAL@@', pascal_str)
+            conversion_content = conversion_content.replace('@@TYPE_SNAKE@@', snake_str)
+            output_file.write(conversion_content)
 
 
 def main():

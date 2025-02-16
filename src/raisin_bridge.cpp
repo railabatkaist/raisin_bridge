@@ -20,9 +20,12 @@
 #include "raisin_network/network.hpp"
 #include "raisin_network/node.hpp"
 
+#include <interfaces/raisin_interfaces/conversion.hpp>
 #include <raisin_interfaces/msg/imu.hpp>
+
 #include <include/raisin_interfaces/msg/imu.hpp>
 // #include "raisin_interfaces/include/raisin_interfaces/raisin_interfaces/msg/imu.hpp"
+
 
 #include "interfaces.hpp"
 
