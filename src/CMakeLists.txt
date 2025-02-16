@@ -16,7 +16,13 @@ include(../generated/helper/find_interfaces.cmake)
 add_executable(raisin_bridge raisin_bridge.cpp)
 
 ament_target_dependencies(raisin_bridge rclcpp raisin_bridge_helper)
+ament_target_dependencies(raisin_bridge raisin_interfaces)
 target_link_libraries(raisin_bridge raisin_network::raisin_network)
 target_include_directories(raisin_bridge PRIVATE ../generated)
+target_include_directories(raisin_bridge PRIVATE  $ENV{RAISIN_WS}/install)
+# target_include_directories(raisin_bridge PRIVATE  ../../../install)
+
+get_target_property(RAISIN_BRIDGE_INCLUDES raisin_bridge INCLUDE_DIRECTORIES)
+message("raisin_bridge include directories: ${RAISIN_BRIDGE_INCLUDES}")
 
 ament_package()

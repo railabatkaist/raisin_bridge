@@ -20,7 +20,9 @@
 #include "raisin_network/network.hpp"
 #include "raisin_network/node.hpp"
 
-#include <ros2_raisin_interfaces/msg/imu.hpp>
+#include <raisin_interfaces/msg/imu.hpp>
+#include <include/raisin_interfaces/msg/imu.hpp>
+// #include "raisin_interfaces/include/raisin_interfaces/raisin_interfaces/msg/imu.hpp"
 
 #include "interfaces.hpp"
 
@@ -33,16 +35,16 @@ class BridgeNode : public rclcpp::Node
   BridgeNode()
     : Node("minimal_subscriber")
     {
-      subscription_ = this->create_subscription<ros2_raisin_interfaces::msg::Imu>(
+      subscription_ = this->create_subscription<raisin_interfaces::msg::Imu>(
       "topic", 10, std::bind(&BridgeNode::topic_callback, this, _1));
     }
 
   private:
-    void topic_callback(const ros2_raisin_interfaces::msg::Imu msg) const
+    void topic_callback(const raisin_interfaces::msg::Imu::SharedPtr msg) const
     {
-      RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg->data.c_str());
+        msg->quaternion_w;
     }
-    rclcpp::Subscription<ros2_raisin_interfaces::msg::Imu>::SharedPtr subscription_;
+    rclcpp::Subscription<raisin_interfaces::msg::Imu>::SharedPtr subscription_;
 };
 
 int main(int argc, char * argv[])
