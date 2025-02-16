@@ -27,7 +27,6 @@ def create_interface(destination_dir, project_directory):
     for srv_file in srv_files:
         shutil.copy2(srv_file, srv_dir)
 
-
     with open(package_template, 'r') as template_file:
         package_content = template_file.read()
     with open(cmakelists_template, 'r') as template_file:
@@ -41,16 +40,25 @@ def create_interface(destination_dir, project_directory):
     with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
 
+    with open(os.path.join(destination_dir, "..", "..", 'interfaces.hpp'), 'a') as output_file:
+        for msg_file in msg_files:
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', os.path.splitext(os.path.basename(msg_file))[0]).lower()
+            snake_str = snake_str.replace("__", "_")
+            output_file.write('#include <' + project_name + '/msg/' + snake_str + '.hpp>\n')
+        for srv_file in srv_files:
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', os.path.splitext(os.path.basename(srv_file))[0]).lower()
+            snake_str = snake_str.replace("__", "_")
+            output_file.write('#include <' + project_name + '/srv/' + snake_str + '.hpp>\n')
 
 
 def main():
-    destination_dir = os.path.join(script_directory, "interfaces")
+    destination_dir = os.path.join(script_directory, "generated")
     delete_directory(destination_dir)
     os.makedirs(destination_dir)
 
     topic_directories = find_msg_directories(raisin_ws, ['src'])
     for topic_directory in topic_directories:
-        create_interface(destination_dir, topic_directory)
+        create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
 if __name__ == '__main__':
     main()
