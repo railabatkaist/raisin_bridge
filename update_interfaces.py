@@ -12,6 +12,7 @@ package_template = os.path.join(script_directory, 'src', 'templates', 'package.x
 cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'CMakeLists.txt')
 conversion_template = os.path.join(script_directory, 'src', 'templates', 'conversion.hpp')
 script_directory = os.path.dirname(os.path.realpath(__file__))
+primitive_types = ['bool', 'byte', 'char', 'float32', 'float64', 'int8', 'int16', 'int32', 'int64', 'string', 'uint8', 'uint16', 'uint32', 'uint64']
 
 def generate_package_xml(project_name, dependencies, destination_dir):
     with open(package_template, 'r') as template_file:
@@ -32,6 +33,54 @@ def generate_cmakelists_txt(project_name, dependencies, destination_dir):
 
     with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
+
+
+def conversion_str(msg_file):
+    with open(msg_file, 'r') as msg_file_content:
+        lines = msg_file_content.readlines()
+
+    to_raisin = ""
+    to_ros = ""
+    for line in lines:
+        line = line.strip()
+
+        # Ignore comments by splitting at '#' and taking the part before it
+        line = line.split('#', 1)[0].strip()
+
+        # Skip empty lines
+        if not line:
+            continue
+
+        parts = line.split()
+        parts_in_two = line.split(' ', 1)
+
+        if len(parts) < 4  and '=' not in parts_in_two[1]:
+            initial_value = ''
+            if len(parts) == 3:
+                data_type, data_name, initial_value = parts
+            else:
+                data_type, data_name = parts
+
+            # Transform the data type for arrays
+            transformed_type, base_type, subproject_path, found_type = transform_data_type(data_type, os.path.splitext(os.path.basename(msg_file))[0])
+
+
+            data_name = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', data_name).lower()
+            data_name = data_name.replace("__", "_")
+
+            # Check if the type is a known message type (not a primitive)
+            # if not found_type and transformed_type != 'Header':
+                # # Use the preferred include format with relative path
+                # includes.append(f"#include \"../../{subproject_path}/msg/{base_type}.hpp\"")
+
+            if not found_type and transformed_type != 'Header':
+                to_raisin += f"\n  raisin_msg.{data_name} = to_raisin_msg(ros_msg->{data_name});"
+                to_ros += f"\n  ros_msg.{data_name} = to_ros_msg(raisin_msg->{data_name});"
+            else:
+                to_raisin += f"\n  raisin_msg.{data_name} = ros_msg->{data_name};"
+                to_ros += f"\n  ros_msg.{data_name} = raisin_msg->{data_name};"
+                
+    return to_raisin, to_ros
 
 
 def create_interface(destination_dir, project_directory):
@@ -74,6 +123,10 @@ def create_interface(destination_dir, project_directory):
             conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
             conversion_content = conversion_content.replace('@@TYPE_PASCAL@@', pascal_str)
             conversion_content = conversion_content.replace('@@TYPE_SNAKE@@', snake_str)
+            to_raisin, to_ros = conversion_str(msg_file)
+            conversion_content = conversion_content.replace('@@CONVERSION_TO_RAISIN@@', to_raisin)
+            conversion_content = conversion_content.replace('@@CONVERSION_TO_ROS@@', to_ros)
+            
             output_file.write(conversion_content)
 
 
