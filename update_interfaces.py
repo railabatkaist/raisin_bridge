@@ -60,5 +60,17 @@ def main():
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
+    project_names = [os.path.basename(topic_directory) for topic_directory in topic_directories]
+
+    ## helpers for finding interfaces
+    with open(package_template, 'r') as template_file:
+        package_content = template_file.read()
+    package_content = package_content.replace('@@DEPENDENCIES@@',  "\n  ".join(f"<depend>{dep}</depend>" for dep in project_names))
+    with open(os.path.join(destination_dir, 'package.xml'), 'w') as output_file:
+        output_file.write(package_content)
+    cmake_content =  "\n".join(f"find_package({dep})" for dep in project_names)
+    with open(os.path.join(destination_dir, 'find_interfaces.cmake'), 'w') as output_file:
+        output_file.write(cmake_content)
+
 if __name__ == '__main__':
     main()
