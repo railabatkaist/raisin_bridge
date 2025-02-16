@@ -7,9 +7,7 @@
   <maintainer email="munjuhyeok@gmail.com">user</maintainer>
   <license>Apache-2.0</license>
 
-  <depend>geometry_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
+  <depend>raisin_bridge_helper</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
