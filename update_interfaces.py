@@ -90,17 +90,17 @@ def conversion_str(msg_file):
             data_name = data_name.replace("__", "_")
 
             if primitive_type:
-                to_raisin += f"\n  raisin_msg.{data_name} = ros_msg->{data_name};"
-                to_ros += f"\n  ros_msg.{data_name} = raisin_msg->{data_name};"
+                to_raisin += f"\n  raisin_msg.{data_name} = ros_msg.{data_name};"
+                to_ros += f"\n  ros_msg.{data_name} = raisin_msg.{data_name};"
             else:
                 if vector_type:
-                    to_raisin += f"\n  for (auto & item: ros_msg->{data_name})\
+                    to_raisin += f"\n  for (auto & item: ros_msg.{data_name})\
                         \n    raisin_msg.{data_name}.push_back(to_raisin_msg(item));"
-                    to_ros += f"\n  for (auto & item: raisin_msg->{data_name})\
+                    to_ros += f"\n  for (auto & item: raisin_msg.{data_name})\
                         \n    ros_msg.{data_name}.push_back(to_ros_msg(item));"
                 else:
-                    to_raisin += f"\n  raisin_msg.{data_name} = to_raisin_msg(ros_msg->{data_name});"
-                    to_ros += f"\n  ros_msg.{data_name} = to_ros_msg(raisin_msg->{data_name});"
+                    to_raisin += f"\n  raisin_msg.{data_name} = to_raisin_msg(ros_msg.{data_name});"
+                    to_ros += f"\n  ros_msg.{data_name} = to_ros_msg(raisin_msg.{data_name});"
                 
     return to_raisin, to_ros
 
