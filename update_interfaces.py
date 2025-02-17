@@ -51,6 +51,7 @@ def generate_cmakelists_txt(project_name, dependencies, destination_dir):
         
     cmakelists_content = cmakelists_content.replace('@@PROJECT_NAME@@', project_name)
     cmakelists_content = cmakelists_content.replace('@@FIND_DEPENDENCIES@@',  "\n".join(f"find_package({dep})" for dep in dependencies))
+    cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(dependencies))
 
     with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
@@ -104,6 +105,79 @@ def conversion_str(msg_file):
                 
     return to_raisin, to_ros
 
+def find_dependencies(project_directory):
+    project_name = os.path.basename(project_directory)
+
+    msg_files = find_msg_files(project_directory)
+    srv_files = find_srv_files(project_directory)
+
+    dependencies = set([])
+
+    for msg_file in msg_files:
+        with open(msg_file, 'r') as msg_file_content:
+            lines = msg_file_content.readlines()
+
+        for line in lines:
+            line = line.strip()
+
+            # Ignore comments by splitting at '#' and taking the part before it
+            line = line.split('#', 1)[0].strip()
+
+            # Skip empty lines
+            if not line:
+                continue
+
+            parts = line.split()
+            parts_in_two = line.split(' ', 1)
+
+            if len(parts) < 4  and '=' not in parts_in_two[1]:
+                initial_value = ''
+                if len(parts) == 3:
+                    data_type, data_name, initial_value = parts
+                else:
+                    data_type, data_name = parts
+
+                base_type = get_base_type(data_type)
+                
+                dependency = base_type.rpartition("/")[0]
+
+                if dependency and dependency != project_name:
+                    dependencies.add(dependency)
+
+    for srv_file in srv_files:
+        with open(srv_file, 'r') as srv_file_content:
+            lines = srv_file_content.readlines()
+
+        for line in lines:
+            line = line.strip()
+
+            # Ignore comments by splitting at '#' and taking the part before it
+            line = line.split('#', 1)[0].strip()
+
+            # Skip empty lines
+            if not line or line == "---":
+                continue
+
+            parts = line.split()
+            parts_in_two = line.split(' ', 1)
+
+            if len(parts) < 4  and '=' not in parts_in_two[1]:
+                initial_value = ''
+                if len(parts) == 3:
+                    data_type, data_name, initial_value = parts
+                else:
+                    data_type, data_name = parts
+
+                base_type = get_base_type(data_type)
+                
+                dependency = base_type.rpartition("/")[0]
+                
+                if dependency and dependency != project_name:
+                    dependencies.add(dependency)
+
+    return dependencies
+
+
 
 def create_interface(destination_dir, project_directory):
     project_name = os.path.basename(project_directory)
@@ -120,9 +194,9 @@ def create_interface(destination_dir, project_directory):
     for srv_file in srv_files:
         shutil.copy2(srv_file, srv_dir)
 
-    depencendies = ['geometry_msgs', 'std_msgs', 'sensor_msgs']
-    generate_package_xml(project_name, depencendies, destination_dir)
-    generate_cmakelists_txt(project_name, depencendies, destination_dir)
+    dependencies = find_dependencies(project_directory)
+    generate_package_xml(project_name, dependencies, destination_dir)
+    generate_cmakelists_txt(project_name, dependencies, destination_dir)
 
     with open(os.path.join(destination_dir, "..", "..", 'interfaces.hpp'), 'a') as output_file:
         for msg_file in msg_files:
@@ -136,6 +210,9 @@ def create_interface(destination_dir, project_directory):
 
 
     with open(os.path.join(destination_dir, 'conversion.cpp'), 'a') as output_file:
+        output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
+        for (dependency) in dependencies:
+            output_file.write("#include <" + dependency + "/conversion.hpp>\n")
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
@@ -171,7 +248,7 @@ def main():
     delete_directory(destination_dir)
     os.makedirs(destination_dir)
 
-    topic_directories = find_msg_directories(raisin_ws, ['src'])
+    topic_directories = find_msg_directories(raisin_ws, ['src', 'messages'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 

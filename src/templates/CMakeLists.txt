@@ -21,7 +21,7 @@ file(GLOB_RECURSE srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "srv/*.srv")
 rosidl_generate_interfaces(${PROJECT_NAME}
     ${msg_files}
     ${srv_files}
-    DEPENDENCIES geometry_msgs std_msgs sensor_msgs # TODO: replace the following dependencies with the ones built by myself
+    DEPENDENCIES @@DEPENDENCIES@@ # TODO: replace the following dependencies with the ones built by myself
 )
 
 if(BUILD_TESTING)
