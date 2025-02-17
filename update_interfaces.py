@@ -263,13 +263,25 @@ def main():
     cmakelists_content = "cmake_minimum_required(VERSION 3.22)"
     cmakelists_content += "\nfind_package(ament_cmake REQUIRED)"
     cmakelists_content += "\nproject(raisin_bridge_helper)\n"
-    cmakelists_content += "\nament_package()"
+    cmakelists_content += "\nset(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)\n"
+    cmakelists_content += "\nfind_package(raisin_network REQUIRED)"
+    for project in project_names:
+        cmakelists_content += f"\nfind_package({project} REQUIRED)"
+    cmakelists_content += "\nfind_package(ament_cmake REQUIRED)\n"
+    cmakelists_content += "\nadd_library(raisin_bridge_helper"
+    for project in project_names:
+        cmakelists_content += f" ../interfaces/{project}/conversion.cpp"
+    cmakelists_content += ")\nament_target_dependencies(raisin_bridge_helper"
+    for project in project_names:
+        cmakelists_content += f" {project}"
+    cmakelists_content += ")\ntarget_link_libraries(raisin_bridge_helper raisin_network::raisin_network)"
+    cmakelists_content += "\ntarget_include_directories(raisin_bridge_helper PRIVATE  $ENV{RAISIN_WS}/install)"
+    cmakelists_content += "\ntarget_include_directories(raisin_bridge_helper PRIVATE  ../interfaces)"
+    cmakelists_content += "\n\nament_package()"
+
     with open(os.path.join(helper_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
 
-    cmake_content =  "\n".join(f"find_package({dep})" for dep in project_names)
-    with open(os.path.join(helper_dir, 'find_interfaces.cmake'), 'w') as output_file:
-        output_file.write(cmake_content)
 
 if __name__ == '__main__':
     main()
