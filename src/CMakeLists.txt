@@ -13,16 +13,19 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(raisin_bridge_helper REQUIRED)
 include(../generated/helper/find_interfaces.cmake)
 
-add_executable(raisin_bridge raisin_bridge.cpp)
+add_executable(raisin_bridge_node raisin_bridge.cpp ../generated/interfaces/raisin_interfaces/conversion.cpp 
+../generated/interfaces/std_msgs/conversion.cpp ../generated/interfaces/builtin_interfaces/conversion.cpp)
 
-ament_target_dependencies(raisin_bridge rclcpp raisin_bridge_helper)
-ament_target_dependencies(raisin_bridge raisin_interfaces)
-target_link_libraries(raisin_bridge raisin_network::raisin_network)
-target_include_directories(raisin_bridge PRIVATE ../generated)
-target_include_directories(raisin_bridge PRIVATE  $ENV{RAISIN_WS}/install)
-# target_include_directories(raisin_bridge PRIVATE  ../../../install)
+ament_target_dependencies(raisin_bridge_node rclcpp raisin_bridge_helper)
+ament_target_dependencies(raisin_bridge_node raisin_interfaces)
+target_link_libraries(raisin_bridge_node raisin_network::raisin_network)
+target_include_directories(raisin_bridge_node PRIVATE ../generated)
+target_include_directories(raisin_bridge_node PRIVATE  $ENV{RAISIN_WS}/install)
+target_include_directories(raisin_bridge_node PRIVATE  ../generated/interfaces)
+# target_include_directories(raisin_bridge_node PRIVATE  ../../../install)
 
-get_target_property(RAISIN_BRIDGE_INCLUDES raisin_bridge INCLUDE_DIRECTORIES)
-message("raisin_bridge include directories: ${RAISIN_BRIDGE_INCLUDES}")
+install(TARGETS
+raisin_bridge_node
+  DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
