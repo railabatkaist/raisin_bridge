@@ -30,9 +30,12 @@ def is_vector_type(type_str: str) -> bool:
 
 def get_base_type(type_str: str) -> str:
     """Extract the base type by removing any vector notation."""
-    if not is_vector_type(type_str):
-        return type_str  # No brackets, so it's just the base type
-    return type_str.split('[')[0]  # Get the part before '['
+    stripped_data_type = type_str.split('<', 1)[0]
+    stripped_data_type = stripped_data_type.split('>', 1)[0]
+
+    if not is_vector_type(stripped_data_type):
+        return stripped_data_type  # No brackets, so it's just the base type
+    return stripped_data_type.split('[')[0]  # Get the part before '['
 
 
 def generate_package_xml(project_name, dependencies, destination_dir):
@@ -51,7 +54,12 @@ def generate_cmakelists_txt(project_name, dependencies, destination_dir):
         
     cmakelists_content = cmakelists_content.replace('@@PROJECT_NAME@@', project_name)
     cmakelists_content = cmakelists_content.replace('@@FIND_DEPENDENCIES@@',  "\n".join(f"find_package({dep})" for dep in dependencies))
-    cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(dependencies))
+
+    if (dependencies):
+        cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  "DEPENDENCIES  " + " ".join(dependencies))
+    else:
+        cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  "")
+
 
     with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
@@ -213,7 +221,6 @@ def create_interface(destination_dir, project_directory):
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
         for (dependency) in dependencies:
             output_file.write("#include <" + dependency + "/conversion.hpp>\n")
-        output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()

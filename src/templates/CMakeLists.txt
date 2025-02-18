@@ -21,7 +21,12 @@ file(GLOB_RECURSE srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "srv/*.srv")
 rosidl_generate_interfaces(${PROJECT_NAME}
     ${msg_files}
     ${srv_files}
-    DEPENDENCIES @@DEPENDENCIES@@ # TODO: replace the following dependencies with the ones built by myself
+    @@DEPENDENCIES@@
+)
+
+install(
+  DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp/${PROJECT_NAME}
+  DESTINATION include/ros2_include/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
