@@ -339,9 +339,19 @@ def main():
             publishers_content += f"    std::shared_ptr<raisin::Publisher<raisin::{project_name}::msg::{pascal_str}>> raisin_publisher_{project_name}_{snake_str}_;\n"
             subscribers_content += f"    rclcpp::Subscription<{project_name}::msg::{pascal_str}>::SharedPtr ros2_subscription_{project_name}_{snake_str}_;\n"
             subscribers_content += f"    std::shared_ptr<raisin::Subscriber<raisin::{project_name}::msg::{pascal_str}>> raisin_subscription_{project_name}_{snake_str}_;\n"
-            # ros2_to_raisin_content += f"    ros2_subscription_{project_name}_{snake_str}_ = create_subscription<{project_name}::msg::{pascal_str}>(\"{snake_str}\", 10, std::bind(&RaisinBridgeHelper::ros2_to_raisin_{project_name}_{snake_str}, this, std::placeholders::_1));\n"
+            ros2_to_raisin_content += f"        raisin_publisher_{project_name}_{snake_str}_ = raisin_node_->createPublisher<raisin::{project_name}::msg::{pascal_str}>(topic_name);\n"
+
+            # ros2_to_raisin_content += f"        ros2_subscription_{project_name}_{snake_str}_ = create_subscription<{project_name}::msg::{pascal_str}>(topic_name, 10, std::bind(&RaisinBridgeHelper::ros2_to_raisin_{project_name}_{snake_str}, this, std::placeholders::_1));\n"
+            ros2_to_raisin_content += f"        ros2_subscription_{project_name}_{snake_str}_ = this->create_subscription<{project_name}::msg::{pascal_str}>(\n"
+            ros2_to_raisin_content += "            topic_name, 10,\n"
+            ros2_to_raisin_content += f"            [this]({project_name}::msg::{pascal_str}::SharedPtr msg) {{\n"
+            ros2_to_raisin_content += f"                raisin_publisher_{project_name}_{snake_str}_->publish(to_raisin_msg(*msg));  // Publish the same message\n"
+            ros2_to_raisin_content += "             }\n"
+            ros2_to_raisin_content += "        );\n"
     conversion_cpp_content = conversion_cpp_content.replace('@@SUBSCRIBERS@@', subscribers_content)
     conversion_cpp_content = conversion_cpp_content.replace('@@PUBLISHERS@@', publishers_content)
+    conversion_cpp_content = conversion_cpp_content.replace('@@ROS2_TO_RAISIN@@', ros2_to_raisin_content)
+    conversion_cpp_content = conversion_cpp_content.replace('@@RAISIN_TO_ROS2@@', raisin_to_ros2_content)
 
     with open(os.path.join(helper_dir, 'conversion.cpp'), 'a') as output_file:
         output_file.write(conversion_cpp_content)
