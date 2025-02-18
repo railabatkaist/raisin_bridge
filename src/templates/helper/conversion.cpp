@@ -30,7 +30,7 @@ class BridgeNode : public rclcpp::Node
         std::cout << "[Client] Connected to server at " << serverId << ". Starting message exchange..." <<
         std::endl;
 
-        raisin_node_ = raisin::Node(clientNetwork);
+        raisin_node_ = std::make_unique<raisin::Node>(raisin::Node(clientNetwork));
     }
 
 // @@REGISTER_FUNCTIONS@@
@@ -49,7 +49,7 @@ class BridgeNode : public rclcpp::Node
 //     }
 
   private:
-    raisin::Node raisin_node_;
+    std::unique_ptr<raisin::Node> raisin_node_;
     // publishers
 @@PUBLISHERS@@
     // subscribers
