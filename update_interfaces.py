@@ -1,5 +1,6 @@
 import os
 import sys
+from enum import Enum
 
 # Get an environment variable (returns None if not found)
 raisin_ws = os.getenv("RAISIN_WS")
@@ -14,6 +15,10 @@ conversion_hpp_template = os.path.join(script_directory, 'src', 'templates', 'co
 conversion_cpp_template = os.path.join(script_directory, 'src', 'templates', 'conversion.cpp')
 script_directory = os.path.dirname(os.path.realpath(__file__))
 
+class SizeType(Enum):
+    SCALAR = 1
+    VECTOR = 2
+    ARRAY = 3
 
 def is_primitive_type(type_str: str) -> bool:
     """Check if the given type string is a primitive type."""
@@ -24,9 +29,14 @@ def is_primitive_type(type_str: str) -> bool:
     ]
     return type_str in primitive_types
 
-def is_vector_type(type_str: str) -> bool:
-    """Check if the given type string represents a vector type."""
-    return '[' in type_str or ']' in type_str
+def get_size_type(type_str: str) -> SizeType:
+    """Determine the size type of the given type string."""
+    if "[]" in type_str:
+        return SizeType.VECTOR
+    elif '[' in type_str or '<' in type_str or '>' in type_str:
+        return SizeType.ARRAY
+    else:
+        return SizeType.SCALAR
 
 def get_base_type(type_str: str) -> str:
     """Extract the base type by removing any vector notation."""
@@ -91,7 +101,7 @@ def conversion_str(msg_file):
             else:
                 data_type, data_name = parts
 
-            vector_type = is_vector_type(data_type)
+            size_type = get_size_type(data_type)
             base_type = get_base_type(data_type)
             primitive_type = is_primitive_type(base_type)
             
@@ -99,14 +109,30 @@ def conversion_str(msg_file):
             data_name = data_name.replace("__", "_")
 
             if primitive_type:
-                to_raisin += f"\n  raisin_msg.{data_name} = ros_msg.{data_name};"
-                to_ros += f"\n  ros_msg.{data_name} = raisin_msg.{data_name};"
+                if size_type == SizeType.VECTOR:
+                    to_raisin += f"\n  for (const auto & item: ros_msg.{data_name})\
+                        \n    raisin_msg.{data_name}.push_back(item);"
+                    to_ros += f"\n  for (const auto & item: raisin_msg.{data_name})\
+                        \n    ros_msg.{data_name}.push_back(item);"
+                elif size_type == SizeType.ARRAY:
+                    to_raisin += f"\n  for (int i = 0; i < ros_msg.{data_name}.size(); i++)\
+                        \n    raisin_msg.{data_name}[i] = ros_msg.{data_name}[i];"
+                    to_ros += f"\n  for (int i = 0; i < raisin_msg.{data_name}.size(); i++)\
+                        \n    ros_msg.{data_name}[i] = raisin_msg.{data_name}[i];"
+                else:
+                    to_raisin += f"\n  raisin_msg.{data_name} = ros_msg.{data_name};"
+                    to_ros += f"\n  ros_msg.{data_name} = raisin_msg.{data_name};"
             else:
-                if vector_type:
-                    to_raisin += f"\n  for (auto & item: ros_msg.{data_name})\
+                if size_type == SizeType.VECTOR:
+                    to_raisin += f"\n  for (const auto & item: ros_msg.{data_name})\
                         \n    raisin_msg.{data_name}.push_back(to_raisin_msg(item));"
-                    to_ros += f"\n  for (auto & item: raisin_msg.{data_name})\
+                    to_ros += f"\n  for (const auto & item: raisin_msg.{data_name})\
                         \n    ros_msg.{data_name}.push_back(to_ros_msg(item));"
+                elif size_type == SizeType.ARRAY:
+                    to_raisin += f"\n  for (int i = 0; i < ros_msg.{data_name}.size(); i++)\
+                        \n    raisin_msg.{data_name}[i] = to_raisin_msg(ros_msg.{data_name}[i]);"
+                    to_ros += f"\n  for (int i = 0; i < raisin_msg.{data_name}.size(); i++)\
+                        \n    ros_msg.{data_name}[i] = to_ros_msg(raisin_msg.{data_name}[i]);"
                 else:
                     to_raisin += f"\n  raisin_msg.{data_name} = to_raisin_msg(ros_msg.{data_name});"
                     to_ros += f"\n  ros_msg.{data_name} = to_ros_msg(raisin_msg.{data_name});"
