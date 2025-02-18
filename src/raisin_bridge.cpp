@@ -17,6 +17,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "include/conversion.hpp"
+
 #include "raisin_network/network.hpp"
 #include "raisin_network/node.hpp"
 

@@ -325,6 +325,13 @@ def main():
     with open(os.path.join(helper_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
 
+    ## header files
+
+    os.makedirs(os.path.join(helper_dir, 'include'), exist_ok=True)
+    with open(os.path.join(helper_dir, 'include/conversion.hpp'), 'a') as output_file:
+        for project in project_names:
+            output_file.write(f"#include <{project}/conversion.hpp>\n")
+
 
 if __name__ == '__main__':
     main()
