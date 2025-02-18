@@ -26,7 +26,7 @@ def is_primitive_type(type_str: str) -> bool:
 
 def is_vector_type(type_str: str) -> bool:
     """Check if the given type string represents a vector type."""
-    return '[' in type_str and ']' in type_str
+    return '[' in type_str or ']' in type_str
 
 def get_base_type(type_str: str) -> str:
     """Extract the base type by removing any vector notation."""
