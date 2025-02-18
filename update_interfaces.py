@@ -87,7 +87,7 @@ def conversion_str(msg_file):
             base_type = get_base_type(data_type)
             primitive_type = is_primitive_type(base_type)
             
-            data_name = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', data_name).lower()
+            data_name = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', data_name).lower()
             data_name = data_name.replace("__", "_")
 
             if primitive_type:
@@ -200,11 +200,11 @@ def create_interface(destination_dir, project_directory):
 
     with open(os.path.join(destination_dir, "..", "..", 'interfaces.hpp'), 'a') as output_file:
         for msg_file in msg_files:
-            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', os.path.splitext(os.path.basename(msg_file))[0]).lower()
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', os.path.splitext(os.path.basename(msg_file))[0]).lower()
             snake_str = snake_str.replace("__", "_")
             output_file.write('#include <' + project_name + '/msg/' + snake_str + '.hpp>\n')
         for srv_file in srv_files:
-            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', os.path.splitext(os.path.basename(srv_file))[0]).lower()
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', os.path.splitext(os.path.basename(srv_file))[0]).lower()
             snake_str = snake_str.replace("__", "_")
             output_file.write('#include <' + project_name + '/srv/' + snake_str + '.hpp>\n')
 
@@ -216,7 +216,7 @@ def create_interface(destination_dir, project_directory):
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
-            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', pascal_str).lower()
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
             with open(conversion_cpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
@@ -232,7 +232,7 @@ def create_interface(destination_dir, project_directory):
     with open(os.path.join(destination_dir, 'conversion.hpp'), 'a') as output_file:
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
-            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z])', '_', pascal_str).lower()
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
             with open(conversion_hpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
