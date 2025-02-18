@@ -43,8 +43,6 @@ def get_base_type(type_str: str) -> str:
     stripped_data_type = type_str.split('<', 1)[0]
     stripped_data_type = stripped_data_type.split('>', 1)[0]
 
-    if not is_vector_type(stripped_data_type):
-        return stripped_data_type  # No brackets, so it's just the base type
     return stripped_data_type.split('[')[0]  # Get the part before '['
 
 
@@ -307,9 +305,21 @@ def main():
     cmakelists_content += ")\nament_target_dependencies(raisin_bridge_helper"
     for project in project_names:
         cmakelists_content += f" {project}"
+    cmakelists_content += ")\nament_export_dependencies("
+    for project in project_names:
+        cmakelists_content += f" {project}"
     cmakelists_content += ")\ntarget_link_libraries(raisin_bridge_helper raisin_network::raisin_network)"
     cmakelists_content += "\ntarget_include_directories(raisin_bridge_helper PRIVATE  $ENV{RAISIN_WS}/install)"
     cmakelists_content += "\ntarget_include_directories(raisin_bridge_helper PRIVATE  ../interfaces)"
+    cmakelists_content += "\nament_export_targets(raisin_bridge_helper_export HAS_LIBRARY_TARGET)"
+    cmakelists_content += "\ninstall(\
+        \n  TARGETS raisin_bridge_helper\
+        \n  EXPORT raisin_bridge_helper_export\
+        \n  ARCHIVE DESTINATION lib\
+        \n  LIBRARY DESTINATION lib\
+        \n  RUNTIME DESTINATION bin\
+        \n  INCLUDES DESTINATION include\n)"
+    cmakelists_content += "\ninstall(DIRECTORY ../interfaces/ DESTINATION install)"
     cmakelists_content += "\n\nament_package()"
 
     with open(os.path.join(helper_dir, 'CMakeLists.txt'), 'w') as output_file:
