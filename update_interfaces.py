@@ -7,12 +7,6 @@ raisin_ws = os.getenv("RAISIN_WS")
 sys.path.append(raisin_ws)
 from raisin_workspace_setup import *
 
-
-script_directory = os.path.dirname(os.path.realpath(__file__))
-package_template = os.path.join(script_directory, 'src', 'templates', 'package.xml')
-cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'CMakeLists.txt')
-conversion_hpp_template = os.path.join(script_directory, 'src', 'templates', 'conversion.hpp')
-conversion_cpp_template = os.path.join(script_directory, 'src', 'templates', 'conversion.cpp')
 script_directory = os.path.dirname(os.path.realpath(__file__))
 
 class SizeType(Enum):
@@ -47,6 +41,7 @@ def get_base_type(type_str: str) -> str:
 
 
 def generate_package_xml(project_name, dependencies, destination_dir):
+    package_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'package.xml')
     with open(package_template, 'r') as template_file:
         package_content = template_file.read()
         
@@ -57,6 +52,7 @@ def generate_package_xml(project_name, dependencies, destination_dir):
         output_file.write(package_content)
 
 def generate_cmakelists_txt(project_name, dependencies, destination_dir):
+    cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'CMakeLists.txt')
     with open(cmakelists_template, 'r') as template_file:
         cmakelists_content = template_file.read()
         
@@ -249,6 +245,7 @@ def create_interface(destination_dir, project_directory):
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
+            conversion_cpp_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion.cpp')
             with open(conversion_cpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
             conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
@@ -265,6 +262,7 @@ def create_interface(destination_dir, project_directory):
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
+            conversion_hpp_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion.hpp')
             with open(conversion_hpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
             conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
