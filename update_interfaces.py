@@ -277,7 +277,7 @@ def main():
     delete_directory(destination_dir)
     os.makedirs(destination_dir)
 
-    topic_directories = find_msg_directories(raisin_ws, ['src', 'messages'])
+    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
@@ -340,14 +340,19 @@ def main():
             subscribers_content += f"    rclcpp::Subscription<{project_name}::msg::{pascal_str}>::SharedPtr ros2_subscription_{project_name}_{snake_str}_;\n"
             subscribers_content += f"    std::shared_ptr<raisin::Subscriber<raisin::{project_name}::msg::{pascal_str}>> raisin_subscription_{project_name}_{snake_str}_;\n"
             ros2_to_raisin_content += f"        raisin_publisher_{project_name}_{snake_str}_ = raisin_node_->createPublisher<raisin::{project_name}::msg::{pascal_str}>(topic_name);\n"
-
-            # ros2_to_raisin_content += f"        ros2_subscription_{project_name}_{snake_str}_ = create_subscription<{project_name}::msg::{pascal_str}>(topic_name, 10, std::bind(&RaisinBridgeHelper::ros2_to_raisin_{project_name}_{snake_str}, this, std::placeholders::_1));\n"
             ros2_to_raisin_content += f"        ros2_subscription_{project_name}_{snake_str}_ = this->create_subscription<{project_name}::msg::{pascal_str}>(\n"
             ros2_to_raisin_content += "            topic_name, 10,\n"
             ros2_to_raisin_content += f"            [this]({project_name}::msg::{pascal_str}::SharedPtr msg) {{\n"
             ros2_to_raisin_content += f"                raisin_publisher_{project_name}_{snake_str}_->publish(to_raisin_msg(*msg));  // Publish the same message\n"
             ros2_to_raisin_content += "             }\n"
             ros2_to_raisin_content += "        );\n"
+            raisin_to_ros2_content += f"        ros2_publisher_{project_name}_{snake_str}_ = this->create_publisher<{project_name}::msg::{pascal_str}>(topic_name, 10);\n"
+            raisin_to_ros2_content += f"        raisin_subscription_{project_name}_{snake_str}_ = raisin_node_->createSubscriber<raisin::{project_name}::msg::{pascal_str}>(\n"
+            raisin_to_ros2_content += "            topic_name, connection_, std::bind(\n"
+            raisin_to_ros2_content += f"            [this](raisin::{project_name}::msg::{pascal_str}::SharedPtr msg) {{\n"
+            raisin_to_ros2_content += f"                ros2_publisher_{project_name}_{snake_str}_->publish(to_ros_msg(*msg));  // Publish the same message\n"
+            raisin_to_ros2_content += "             }\n"
+            raisin_to_ros2_content += "        ,_1));\n"
     conversion_cpp_content = conversion_cpp_content.replace('@@SUBSCRIBERS@@', subscribers_content)
     conversion_cpp_content = conversion_cpp_content.replace('@@PUBLISHERS@@', publishers_content)
     conversion_cpp_content = conversion_cpp_content.replace('@@ROS2_TO_RAISIN@@', ros2_to_raisin_content)

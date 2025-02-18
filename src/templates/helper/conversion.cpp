@@ -21,9 +21,8 @@ class BridgeNode : public rclcpp::Node
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         // Attempt to connect to the server
-        std::shared_ptr<raisin::Remote::Connection> connection;
-        if (!connection) {
-            connection = clientNetwork->connect(serverId);
+        if (!connection_) {
+            connection_ = clientNetwork->connect(serverId);
             std::cerr << "[Client] Failed to connect to server at " << serverId << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
@@ -43,6 +42,7 @@ class BridgeNode : public rclcpp::Node
 
   private:
     std::unique_ptr<raisin::Node> raisin_node_;
+    std::shared_ptr<raisin::Remote::Connection> connection_;
     // publishers
 @@PUBLISHERS@@
     // subscribers
