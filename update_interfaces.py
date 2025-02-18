@@ -288,37 +288,28 @@ def main():
     os.makedirs(helper_dir)
     generate_package_xml('raisin_bridge_helper', project_names, helper_dir)
 
-    ## dummy cmakelist file
-    cmakelists_content = "cmake_minimum_required(VERSION 3.22)"
-    cmakelists_content += "\nfind_package(ament_cmake REQUIRED)"
-    cmakelists_content += "\nproject(raisin_bridge_helper)\n"
-    cmakelists_content += "\nset(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)\n"
-    cmakelists_content += "\nfind_package(raisin_network REQUIRED)"
+    ## cmakelist file for helper
+
+    cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'CMakeLists.txt')
+    with open(cmakelists_template, 'r') as template_file:
+        cmakelists_content = template_file.read()
+
+    content = ""
     for project in project_names:
-        cmakelists_content += f"\nfind_package({project} REQUIRED)"
-    cmakelists_content += "\nfind_package(ament_cmake REQUIRED)\n"
-    cmakelists_content += "\nadd_library(raisin_bridge_helper"
+        content += f"\nfind_package({project} REQUIRED)"
+    content += "\nfind_package(ament_cmake REQUIRED)\n"
+    content += "\nadd_library(raisin_bridge_helper"
     for project in project_names:
-        cmakelists_content += f" ../interfaces/{project}/conversion.cpp"
-    cmakelists_content += ")\nament_target_dependencies(raisin_bridge_helper"
+        content += f" ../interfaces/{project}/conversion.cpp"
+    content += ")\nament_target_dependencies(raisin_bridge_helper"
     for project in project_names:
-        cmakelists_content += f" {project}"
-    cmakelists_content += ")\nament_export_dependencies("
+        content += f" {project}"
+    content += ")\nament_export_dependencies("
     for project in project_names:
-        cmakelists_content += f" {project}"
-    cmakelists_content += ")\ntarget_link_libraries(raisin_bridge_helper raisin_network::raisin_network)"
-    cmakelists_content += "\ntarget_include_directories(raisin_bridge_helper PRIVATE  $ENV{RAISIN_WS}/install)"
-    cmakelists_content += "\ntarget_include_directories(raisin_bridge_helper PRIVATE  ../interfaces)"
-    cmakelists_content += "\nament_export_targets(raisin_bridge_helper_export HAS_LIBRARY_TARGET)"
-    cmakelists_content += "\ninstall(\
-        \n  TARGETS raisin_bridge_helper\
-        \n  EXPORT raisin_bridge_helper_export\
-        \n  ARCHIVE DESTINATION lib\
-        \n  LIBRARY DESTINATION lib\
-        \n  RUNTIME DESTINATION bin\
-        \n  INCLUDES DESTINATION include\n)"
-    cmakelists_content += "\ninstall(DIRECTORY ../interfaces/ DESTINATION install)"
-    cmakelists_content += "\n\nament_package()"
+        content += f" {project}"
+    content += ")"
+
+    cmakelists_content = cmakelists_content.replace('@@CONTENT@@', content)
 
     with open(os.path.join(helper_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
