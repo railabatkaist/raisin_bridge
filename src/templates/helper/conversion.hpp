@@ -36,5 +36,5 @@ class BridgeNode : public rclcpp::Node
 
   private:
     raisin::Node raisin_node_;
-    @@SUBSCRIBERS@@
+@@SUBSCRIBERS@@
 };

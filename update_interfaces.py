@@ -322,6 +322,18 @@ def main():
         header_content = template_file.read()
     header_content = header_content.replace('@@INCLUDE_PACKAGES@@', ''.join(f"#include <{project}/conversion.hpp>\n" for project in project_names))
 
+    subscribers_content = ""
+    
+    for project_directory in topic_directories:
+        project_name = os.path.basename(project_directory)
+        msg_files = find_msg_files(project_directory)
+        for msg_file in msg_files:
+            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', os.path.splitext(os.path.basename(msg_file))[0]).lower()
+            subscribers_content += f"    rclcpp::Subscription<{project_name}::msg::{snake_str}>::SharedPtr ros2_subscription_{project_name}_{snake_str}_;\n"
+            subscribers_content += f"    std::shared_ptr<raisin::Subscriber<raisin::{project_name}::msg::{snake_str}> raisin_subscription_{project_name}_{snake_str}_;\n"
+
+    header_content = header_content.replace('@@SUBSCRIBERS@@', subscribers_content)
+
     with open(os.path.join(helper_dir, 'include', 'conversion.hpp'), 'a') as output_file:
         output_file.write(header_content)
 
