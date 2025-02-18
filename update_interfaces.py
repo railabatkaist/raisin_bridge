@@ -317,10 +317,13 @@ def main():
     ## header files
 
     os.makedirs(os.path.join(helper_dir, 'include'), exist_ok=True)
-    with open(os.path.join(helper_dir, 'include/conversion.hpp'), 'a') as output_file:
-        for project in project_names:
-            output_file.write(f"#include <{project}/conversion.hpp>\n")
+    header_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp')
+    with open(header_template, 'r') as template_file:
+        header_content = template_file.read()
+    header_content = header_content.replace('@@INCLUDE_PACKAGES@@', ''.join(f"#include <{project}/conversion.hpp>\n" for project in project_names))
 
+    with open(os.path.join(helper_dir, 'include', 'conversion.hpp'), 'a') as output_file:
+        output_file.write(header_content)
 
 if __name__ == '__main__':
     main()
