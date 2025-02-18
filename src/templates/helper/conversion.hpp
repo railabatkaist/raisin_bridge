@@ -34,7 +34,25 @@ class BridgeNode : public rclcpp::Node
         raisin_node_ = raisin::Node(clientNetwork);
     }
 
+@@REGISTER_FUNCTIONS@@
+    void register_ros2_to_raisin(std::string topic_name, std::string message_type){
+@@ROS2_TO_RAISIN@@
+        auto callback = std::bind(&BridgeNode::ros2_to_raisin_callback<@@MESSAGE_TYPE@@>, this, _1);
+        ros2_subscription_@@MESSAGE_TYPE@@_ = this->create_subscription<@@MESSAGE_TYPE@@>(topic_name, 10, callback);
+        raisin_subscription_@@MESSAGE_TYPE@@_ = raisin_node_.create_subscriber<@@MESSAGE_TYPE@@>(topic_name);
+    }
+
+    void register_raisin_to_ros2(std::string topic_name, std::string message_type){
+@@RAISIN_TO_ROS2@@
+        auto callback = std::bind(&BridgeNode::raisin_to_ros2_callback<@@MESSAGE_TYPE@@>, this, _1);
+        ros2_subscription_@@MESSAGE_TYPE@@_ = this->create_subscription<@@MESSAGE_TYPE@@>(topic_name, 10, callback);
+        raisin_subscription_@@MESSAGE_TYPE@@_ = raisin_node_.create_subscriber<@@MESSAGE_TYPE@@>(topic_name);
+    }
+
   private:
     raisin::Node raisin_node_;
+    // publishers
+@@PUBLISHERS@@
+    // subscribers
 @@SUBSCRIBERS@@
 };
