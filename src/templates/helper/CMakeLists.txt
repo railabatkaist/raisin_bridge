@@ -4,8 +4,10 @@ project(raisin_bridge_helper)
 
 set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)
 find_package(raisin_network REQUIRED)
+find_package(rclcpp REQUIRED)
 @@CONTENT@@
 
+ament_target_dependencies(raisin_bridge_helper rclcpp)
 target_link_libraries(raisin_bridge_helper raisin_network::raisin_network)
 target_include_directories(raisin_bridge_helper PRIVATE  $ENV{RAISIN_WS}/install)
 target_include_directories(raisin_bridge_helper PRIVATE  ../interfaces)

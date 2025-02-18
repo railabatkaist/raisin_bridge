@@ -298,7 +298,7 @@ def main():
     for project in project_names:
         content += f"\nfind_package({project} REQUIRED)"
     content += "\nfind_package(ament_cmake REQUIRED)\n"
-    content += "\nadd_library(raisin_bridge_helper"
+    content += "\nadd_library(raisin_bridge_helper conversion.cpp"
     for project in project_names:
         content += f" ../interfaces/{project}/conversion.cpp"
     content += ")\nament_target_dependencies(raisin_bridge_helper"
@@ -316,11 +316,13 @@ def main():
 
     ## conversion header
     os.makedirs(os.path.join(helper_dir, 'include'), exist_ok=True)
-    header_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp')
+    header_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.cpp')
     with open(header_template, 'r') as template_file:
-        header_content = template_file.read()
+        conversion_cpp_content = template_file.read()
     ## include headers
-    header_content = header_content.replace('@@INCLUDE_PACKAGES@@', ''.join(f"#include <{project}/conversion.hpp>\n" for project in project_names))
+    with open(os.path.join(helper_dir, 'include', 'conversion.hpp'), 'w') as output_file:
+        output_file.write(''.join(f"#include <{project}/conversion.hpp>\n" for project in project_names))
+        output_file.write('class BridgeNode;')
 
     ## create subscribers, mapping between typename and subscriber
     subscribers_content = ""
@@ -338,11 +340,11 @@ def main():
             subscribers_content += f"    rclcpp::Subscription<{project_name}::msg::{pascal_str}>::SharedPtr ros2_subscription_{project_name}_{snake_str}_;\n"
             subscribers_content += f"    std::shared_ptr<raisin::Subscriber<raisin::{project_name}::msg::{pascal_str}>> raisin_subscription_{project_name}_{snake_str}_;\n"
             # ros2_to_raisin_content += f"    ros2_subscription_{project_name}_{snake_str}_ = create_subscription<{project_name}::msg::{pascal_str}>(\"{snake_str}\", 10, std::bind(&RaisinBridgeHelper::ros2_to_raisin_{project_name}_{snake_str}, this, std::placeholders::_1));\n"
-    header_content = header_content.replace('@@SUBSCRIBERS@@', subscribers_content)
-    header_content = header_content.replace('@@PUBLISHERS@@', publishers_content)
+    conversion_cpp_content = conversion_cpp_content.replace('@@SUBSCRIBERS@@', subscribers_content)
+    conversion_cpp_content = conversion_cpp_content.replace('@@PUBLISHERS@@', publishers_content)
 
-    with open(os.path.join(helper_dir, 'include', 'conversion.hpp'), 'a') as output_file:
-        output_file.write(header_content)
+    with open(os.path.join(helper_dir, 'conversion.cpp'), 'a') as output_file:
+        output_file.write(conversion_cpp_content)
 
 if __name__ == '__main__':
     main()
