@@ -53,6 +53,9 @@ class BridgeNode : public rclcpp::Node
       );
   }
 
+  void register_ros2_to_raisin(std::string type_name, std::string topic_name);
+  void register_raisin_to_ros2(std::string type_name, std::string topic_name);
+
   private:
     std::unique_ptr<raisin::Node> raisin_node_;
     std::shared_ptr<raisin::Remote::Connection> connection_;

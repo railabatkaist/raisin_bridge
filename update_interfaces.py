@@ -277,7 +277,7 @@ def main():
     delete_directory(destination_dir)
     os.makedirs(destination_dir)
 
-    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces'])
+    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces', 'messages/std_msgs'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
@@ -340,12 +340,10 @@ def main():
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
-            publishers_content += f"    rclcpp::Publisher<{project_name}::msg::{pascal_str}>::SharedPtr ros2_publisher_{project_name}_{snake_str}_;\n"
-            publishers_content += f"    std::shared_ptr<raisin::Publisher<raisin::{project_name}::msg::{pascal_str}>> raisin_publisher_{project_name}_{snake_str}_;\n"
-            subscribers_content += f"    rclcpp::Subscription<{project_name}::msg::{pascal_str}>::SharedPtr ros2_subscription_{project_name}_{snake_str}_;\n"
-            subscribers_content += f"    std::shared_ptr<raisin::Subscriber<raisin::{project_name}::msg::{pascal_str}>> raisin_subscription_{project_name}_{snake_str}_;\n"
-    conversion_cpp_content = conversion_cpp_content.replace('@@SUBSCRIBERS@@', subscribers_content)
-    conversion_cpp_content = conversion_cpp_content.replace('@@PUBLISHERS@@', publishers_content)
+            ros2_to_raisin_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
+            ros2_to_raisin_content += f"    \n        register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
+            raisin_to_ros2_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
+            raisin_to_ros2_content += f"    \n        register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
     conversion_cpp_content = conversion_cpp_content.replace('@@ROS2_TO_RAISIN@@', ros2_to_raisin_content)
     conversion_cpp_content = conversion_cpp_content.replace('@@RAISIN_TO_ROS2@@', raisin_to_ros2_content)
 
