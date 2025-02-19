@@ -11,13 +11,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(raisin_bridge_helper REQUIRED)
-include(../generated/helper/find_interfaces.cmake)
 
-add_executable(raisin_bridge_node raisin_bridge.cpp ../generated/interfaces/raisin_interfaces/conversion.cpp 
-../generated/interfaces/std_msgs/conversion.cpp ../generated/interfaces/builtin_interfaces/conversion.cpp)
+add_executable(raisin_bridge_node raisin_bridge.cpp)
 
 ament_target_dependencies(raisin_bridge_node rclcpp raisin_bridge_helper)
-ament_target_dependencies(raisin_bridge_node raisin_interfaces)
 target_link_libraries(raisin_bridge_node raisin_network::raisin_network)
 target_include_directories(raisin_bridge_node PRIVATE ../generated)
 target_include_directories(raisin_bridge_node PRIVATE  $ENV{RAISIN_WS}/install)
