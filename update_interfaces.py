@@ -314,15 +314,20 @@ def main():
     with open(os.path.join(helper_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
 
-    ## conversion header
+
+
+    ## conversion.hpp
+
+    with open(os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp'), 'r') as template_file:
+        conversion_hpp_content = template_file.read()
     os.makedirs(os.path.join(helper_dir, 'include'), exist_ok=True)
-    header_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.cpp')
-    with open(header_template, 'r') as template_file:
-        conversion_cpp_content = template_file.read()
-    ## include headers
+    conversion_hpp_content = conversion_hpp_content.replace('@@INCLUDE_DEPENDENCIES@@',  "\n".join(f"#include <{project}/conversion.hpp>" for project in project_names))
     with open(os.path.join(helper_dir, 'include', 'conversion.hpp'), 'w') as output_file:
-        output_file.write(''.join(f"#include <{project}/conversion.hpp>\n" for project in project_names))
-        output_file.write('class BridgeNode;')
+        output_file.write(conversion_hpp_content)
+
+    ## conversion.cpp
+    with open(os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.cpp'), 'r') as template_file:
+        conversion_cpp_content = template_file.read()
 
     ## create subscribers, mapping between typename and subscriber
     subscribers_content = ""
@@ -339,20 +344,6 @@ def main():
             publishers_content += f"    std::shared_ptr<raisin::Publisher<raisin::{project_name}::msg::{pascal_str}>> raisin_publisher_{project_name}_{snake_str}_;\n"
             subscribers_content += f"    rclcpp::Subscription<{project_name}::msg::{pascal_str}>::SharedPtr ros2_subscription_{project_name}_{snake_str}_;\n"
             subscribers_content += f"    std::shared_ptr<raisin::Subscriber<raisin::{project_name}::msg::{pascal_str}>> raisin_subscription_{project_name}_{snake_str}_;\n"
-            ros2_to_raisin_content += f"        raisin_publisher_{project_name}_{snake_str}_ = raisin_node_->createPublisher<raisin::{project_name}::msg::{pascal_str}>(topic_name);\n"
-            ros2_to_raisin_content += f"        ros2_subscription_{project_name}_{snake_str}_ = this->create_subscription<{project_name}::msg::{pascal_str}>(\n"
-            ros2_to_raisin_content += "            topic_name, 10,\n"
-            ros2_to_raisin_content += f"            [this]({project_name}::msg::{pascal_str}::SharedPtr msg) {{\n"
-            ros2_to_raisin_content += f"                raisin_publisher_{project_name}_{snake_str}_->publish(to_raisin_msg(*msg));  // Publish the same message\n"
-            ros2_to_raisin_content += "             }\n"
-            ros2_to_raisin_content += "        );\n"
-            raisin_to_ros2_content += f"        ros2_publisher_{project_name}_{snake_str}_ = this->create_publisher<{project_name}::msg::{pascal_str}>(topic_name, 10);\n"
-            raisin_to_ros2_content += f"        raisin_subscription_{project_name}_{snake_str}_ = raisin_node_->createSubscriber<raisin::{project_name}::msg::{pascal_str}>(\n"
-            raisin_to_ros2_content += "            topic_name, connection_, std::bind(\n"
-            raisin_to_ros2_content += f"            [this](raisin::{project_name}::msg::{pascal_str}::SharedPtr msg) {{\n"
-            raisin_to_ros2_content += f"                ros2_publisher_{project_name}_{snake_str}_->publish(to_ros_msg(*msg));  // Publish the same message\n"
-            raisin_to_ros2_content += "             }\n"
-            raisin_to_ros2_content += "        ,_1));\n"
     conversion_cpp_content = conversion_cpp_content.replace('@@SUBSCRIBERS@@', subscribers_content)
     conversion_cpp_content = conversion_cpp_content.replace('@@PUBLISHERS@@', publishers_content)
     conversion_cpp_content = conversion_cpp_content.replace('@@ROS2_TO_RAISIN@@', ros2_to_raisin_content)
