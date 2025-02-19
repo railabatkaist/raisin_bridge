@@ -34,21 +34,24 @@ class BridgeNode : public rclcpp::Node
   template <typename T_ROS, typename T_RAISIN>
   void register_ros2_to_raisin(std::string topic_name){
       auto raisin_publisher = raisin_node_->createPublisher<T_RAISIN>(topic_name);
-      auto ros2_subscription = this->create_subscription<T_ROS>(
+      raisin_publishers[topic_name] = raisin_publisher;
+      ros2_subscriptions[topic_name] = this->create_subscription<T_ROS>(
           topic_name, 10,
           [raisin_publisher](std::shared_ptr<T_ROS> msg) {
               raisin_publisher->publish(to_raisin_msg(*msg));  // Publish the same message
           }
       );
+      
   }
 
   template <typename T_ROS, typename T_RAISIN>
   void register_raisin_to_ros2(std::string topic_name){
       auto ros2_publisher = this->create_publisher<T_ROS>(topic_name, 10);
-      auto raisin_subscriber = raisin_node_->createSubscriber<T_RAISIN>(
+      ros2_publishers[topic_name] = ros2_publisher;
+      raisin_subscribers[topic_name] = raisin_node_->createSubscriber<T_RAISIN>(
           topic_name, connection_,
           std::bind([ros2_publisher](std::shared_ptr<T_RAISIN> msg) {
-              ros2_publisher->publish(to_ros_msg(*msg));  // Publish the same message
+            ros2_publisher->publish(to_ros_msg(*msg));  // Publish the same message
           }, _1)
       );
   }
@@ -59,4 +62,8 @@ class BridgeNode : public rclcpp::Node
   private:
     std::unique_ptr<raisin::Node> raisin_node_;
     std::shared_ptr<raisin::Remote::Connection> connection_;
+    std::map<std::string, std::any> ros2_publishers;
+    std::map<std::string, std::any> ros2_subscriptions;
+    std::map<std::string, std::any> raisin_publishers;
+    std::map<std::string, std::any> raisin_subscribers;    
 };
