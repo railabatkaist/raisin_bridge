@@ -8,7 +8,7 @@ using namespace std::placeholders;  // To make _1, _2, etc., available
 class BridgeNode : public rclcpp::Node
 {
   public:  
-  BridgeNode(std::string clientId, std::string serverId)
+  BridgeNode(std::string serverId, std::string clientId)
   : rclcpp::Node("bridge_node")
   {
       std::vector<std::vector<std::string>> threads = {{"main"}};
