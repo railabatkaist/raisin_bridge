@@ -277,7 +277,7 @@ def main():
     delete_directory(destination_dir)
     os.makedirs(destination_dir)
 
-    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces', 'messages/std_msgs'])
+    topic_directories = find_msg_directories(raisin_ws, ['messages'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
@@ -340,10 +340,10 @@ def main():
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
-            ros2_to_raisin_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
-            ros2_to_raisin_content += f"    \n        register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
-            raisin_to_ros2_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
-            raisin_to_ros2_content += f"    \n        register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
+            # ros2_to_raisin_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
+            # ros2_to_raisin_content += f"    \n        register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
+            # raisin_to_ros2_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
+            # raisin_to_ros2_content += f"    \n        register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
     conversion_cpp_content = conversion_cpp_content.replace('@@ROS2_TO_RAISIN@@', ros2_to_raisin_content)
     conversion_cpp_content = conversion_cpp_content.replace('@@RAISIN_TO_ROS2@@', raisin_to_ros2_content)
 
