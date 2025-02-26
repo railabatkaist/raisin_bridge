@@ -25,9 +25,10 @@ int main(int argc, char * argv[])
 {
   std::string serverId = "server";
   std::string clientId = "raisin_bridge";
+  std::string networkInterface;
 
   rclcpp::init(argc, argv);
-  std::shared_ptr<BridgeNode> bridge_node = std::make_shared<BridgeNode>(serverId, clientId);
+  std::shared_ptr<BridgeNode> bridge_node = std::make_shared<BridgeNode>(serverId, clientId, networkInterface);
   
   bridge_node->register_raisin_to_ros2<std_msgs::msg::String, raisin::std_msgs::msg::String>("imu");
   bridge_node->register_ros2_to_raisin<std_msgs::msg::String, raisin::std_msgs::msg::String>("chatter");

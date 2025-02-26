@@ -8,14 +8,15 @@ using namespace std::placeholders;  // To make _1, _2, etc., available
 class BridgeNode : public rclcpp::Node
 {
   public:  
-  BridgeNode(std::string serverId, std::string clientId)
+  BridgeNode(std::string serverId, std::string clientId, std::string networkInterface)
   : rclcpp::Node("bridge_node")
   {
       std::vector<std::vector<std::string>> threads = {{"main"}};
       std::shared_ptr<raisin::Network> clientNetwork = std::make_shared<raisin::Network>(
           clientId,
           "test",
-          threads);
+          threads,
+          networkInterface);
 
       std::this_thread::sleep_for(std::chrono::seconds(1));
 
