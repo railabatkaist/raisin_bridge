@@ -5,7 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install/lib)
+set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)
 find_package(raisin_network)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)

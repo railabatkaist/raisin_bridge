@@ -277,7 +277,8 @@ def main():
     delete_directory(destination_dir)
     os.makedirs(destination_dir)
 
-    topic_directories = find_msg_directories(raisin_ws, ['messages'])
+    # topic_directories = find_msg_directories(raisin_ws, ['messages'])
+    topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
