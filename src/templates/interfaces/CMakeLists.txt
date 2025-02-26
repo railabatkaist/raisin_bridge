@@ -6,6 +6,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # find dependencies
+set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)
+find_package(raisin_network REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
@@ -24,10 +26,21 @@ rosidl_generate_interfaces(${PROJECT_NAME}
     @@DEPENDENCIES@@
 )
 
-install(
-  DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp/${PROJECT_NAME}
-  DESTINATION include/ros2_include/${PROJECT_NAME}
+add_library(${PROJECT_NAME}_conversion SHARED conversion.cpp)
+rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}
+"rosidl_typesupport_cpp")
+target_link_libraries(${PROJECT_NAME}_conversion raisin_network)
+target_include_directories(${PROJECT_NAME}_conversion PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
+target_include_directories(${PROJECT_NAME}_conversion PRIVATE  $ENV{RAISIN_WS}/install)
+
+install(DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
+)
+
+install(TARGETS ${PROJECT_NAME}_conversion DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

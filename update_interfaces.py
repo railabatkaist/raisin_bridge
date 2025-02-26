@@ -213,8 +213,10 @@ def create_interface(destination_dir, project_directory):
 
     msg_dir = os.path.join(destination_dir, 'msg')
     srv_dir = os.path.join(destination_dir, 'srv')
+    conversion_header_dir = os.path.join(destination_dir, 'include', project_name)
     os.makedirs(msg_dir, exist_ok=True)
     os.makedirs(srv_dir, exist_ok=True)
+    os.makedirs(conversion_header_dir, exist_ok=True)
     msg_files = find_msg_files(project_directory)
     srv_files = find_srv_files(project_directory)
     for msg_file in msg_files:
@@ -257,7 +259,7 @@ def create_interface(destination_dir, project_directory):
             
             output_file.write(conversion_content)
 
-    with open(os.path.join(destination_dir, 'conversion.hpp'), 'a') as output_file:
+    with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
@@ -278,7 +280,7 @@ def main():
     os.makedirs(destination_dir)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
-    topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
+    topic_directories = find_msg_directories(raisin_ws, ['messages'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
