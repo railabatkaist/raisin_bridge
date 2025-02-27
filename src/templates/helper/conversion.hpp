@@ -38,7 +38,7 @@ class BridgeNode : public rclcpp::Node
       auto raisin_publisher = raisin_node_->createPublisher<T_RAISIN>(topic_name);
       raisin_publishers[topic_name] = raisin_publisher;
       ros2_subscriptions[topic_name] = this->create_subscription<T_ROS>(
-          topic_name, 10,
+          topic_name, rclcpp::QoS(3).best_effort(),
           [raisin_publisher](std::shared_ptr<T_ROS> msg) {
               raisin_publisher->publish(to_raisin_msg(*msg));  // Publish the same message
           }
