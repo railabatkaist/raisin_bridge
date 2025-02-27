@@ -11,7 +11,7 @@ ament_target_dependencies(raisin_bridge_helper rclcpp)
 target_link_libraries(raisin_bridge_helper raisin_network)
 target_include_directories(raisin_bridge_helper PRIVATE  $ENV{RAISIN_WS}/install)
 target_include_directories(raisin_bridge_helper PRIVATE  $ENV{RAISIN_WS}/install/include)
-target_include_directories(raisin_bridge_helper PRIVATE  ../interfaces)
+# target_include_directories(raisin_bridge_helper PRIVATE  ../interfaces)
 ament_export_targets(raisin_bridge_helper_export HAS_LIBRARY_TARGET)
 install(        
   TARGETS raisin_bridge_helper        

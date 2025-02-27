@@ -225,6 +225,7 @@ def create_interface(destination_dir, project_directory):
         shutil.copy2(srv_file, srv_dir)
 
     dependencies = find_dependencies(project_directory)
+    dependencies.add("raisin_bridge_helper")
     generate_package_xml(project_name, dependencies, destination_dir)
     generate_cmakelists_txt(project_name, dependencies, destination_dir)
 
@@ -280,7 +281,7 @@ def main():
     os.makedirs(destination_dir)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
-    topic_directories = find_msg_directories(raisin_ws, ['messages'])
+    topic_directories = find_msg_directories(raisin_ws, ['messages', 'src'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
@@ -289,7 +290,7 @@ def main():
     ## helpers for finding interfaces
     helper_dir = os.path.join(destination_dir, 'helper')
     os.makedirs(helper_dir)
-    generate_package_xml('raisin_bridge_helper', project_names, helper_dir)
+    generate_package_xml('raisin_bridge_helper', [], helper_dir)
 
     ## cmakelist file for helper
 
@@ -298,18 +299,18 @@ def main():
         cmakelists_content = template_file.read()
 
     content = ""
-    for project in project_names:
-        content += f"\nfind_package({project} REQUIRED)"
+    # for project in project_names:
+    #     content += f"\nfind_package({project} REQUIRED)"
     content += "\nfind_package(ament_cmake REQUIRED)\n"
     content += "\nadd_library(raisin_bridge_helper conversion.cpp"
-    for project in project_names:
-        content += f" ../interfaces/{project}/conversion.cpp"
-    content += ")\nament_target_dependencies(raisin_bridge_helper"
-    for project in project_names:
-        content += f" {project}"
-    content += ")\nament_export_dependencies("
-    for project in project_names:
-        content += f" {project}"
+    # for project in project_names:
+    #     content += f" ../interfaces/{project}/conversion.cpp"
+    # content += ")\nament_target_dependencies(raisin_bridge_helper"
+    # for project in project_names:
+    #     content += f" {project}"
+    # content += ")\nament_export_dependencies("
+    # for project in project_names:
+    #     content += f" {project}"
     content += ")"
 
     cmakelists_content = cmakelists_content.replace('@@CONTENT@@', content)
@@ -324,7 +325,7 @@ def main():
     with open(os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp'), 'r') as template_file:
         conversion_hpp_content = template_file.read()
     os.makedirs(os.path.join(helper_dir, 'include'), exist_ok=True)
-    conversion_hpp_content = conversion_hpp_content.replace('@@INCLUDE_DEPENDENCIES@@',  "\n".join(f"#include <{project}/conversion.hpp>" for project in project_names))
+    # conversion_hpp_content = conversion_hpp_content.replace('@@INCLUDE_DEPENDENCIES@@',  "\n".join(f"#include <{project}/conversion.hpp>" for project in project_names))
     with open(os.path.join(helper_dir, 'include', 'conversion.hpp'), 'w') as output_file:
         output_file.write(conversion_hpp_content)
 

@@ -20,14 +20,14 @@ find_package(rosidl_default_generators REQUIRED)
 file(GLOB_RECURSE msg_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "msg/*msg")
 file(GLOB_RECURSE srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "srv/*.srv")
 
-rosidl_generate_interfaces(${PROJECT_NAME}
+rosidl_generate_interfaces(${PROJECT_NAME}_ros2
     ${msg_files}
     ${srv_files}
     @@DEPENDENCIES@@
 )
 
 add_library(${PROJECT_NAME}_conversion SHARED conversion.cpp)
-rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}
+rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}_ros2
 "rosidl_typesupport_cpp")
 target_link_libraries(${PROJECT_NAME}_conversion raisin_network)
 target_include_directories(${PROJECT_NAME}_conversion PUBLIC
