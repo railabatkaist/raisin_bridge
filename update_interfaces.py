@@ -281,7 +281,7 @@ def main():
     os.makedirs(destination_dir)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
-    topic_directories = find_msg_directories(raisin_ws, ['messages', 'src'])
+    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
@@ -324,9 +324,9 @@ def main():
 
     with open(os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp'), 'r') as template_file:
         conversion_hpp_content = template_file.read()
-    os.makedirs(os.path.join(helper_dir, 'include'), exist_ok=True)
+    os.makedirs(os.path.join(helper_dir, 'include', 'raisin_bridge_helper'), exist_ok=True)
     # conversion_hpp_content = conversion_hpp_content.replace('@@INCLUDE_DEPENDENCIES@@',  "\n".join(f"#include <{project}/conversion.hpp>" for project in project_names))
-    with open(os.path.join(helper_dir, 'include', 'conversion.hpp'), 'w') as output_file:
+    with open(os.path.join(helper_dir, 'include', 'raisin_bridge_helper', 'conversion.hpp'), 'w') as output_file:
         output_file.write(conversion_hpp_content)
 
     ## conversion.cpp
