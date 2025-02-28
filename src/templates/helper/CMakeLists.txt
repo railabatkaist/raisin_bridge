@@ -5,7 +5,8 @@ project(raisin_bridge_helper)
 set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)
 find_package(raisin_network REQUIRED)
 find_package(rclcpp REQUIRED)
-@@CONTENT@@
+
+add_library(raisin_bridge_helper conversion.cpp)
 
 ament_target_dependencies(raisin_bridge_helper rclcpp)
 target_link_libraries(raisin_bridge_helper raisin_network)
@@ -26,6 +27,6 @@ install(
   RUNTIME DESTINATION bin        
   INCLUDES DESTINATION include
 )
-install(DIRECTORY include DESTINATION include)
+install(DIRECTORY include/ DESTINATION include)
 
 ament_package()

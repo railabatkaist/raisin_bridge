@@ -10,8 +10,10 @@ set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)
 find_package(raisin_network REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp REQUIRED)
 
 # TODO: replace the following dependencies with the ones built by myself
+find_package(raisin_bridge_helper)
 @@FIND_DEPENDENCIES@@
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -29,6 +31,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}_ros2
 add_library(${PROJECT_NAME}_conversion SHARED conversion.cpp)
 rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}_ros2
 "rosidl_typesupport_cpp")
+ament_target_dependencies(${PROJECT_NAME}_conversion raisin_bridge_helper)
 target_link_libraries(${PROJECT_NAME}_conversion raisin_network)
 target_include_directories(${PROJECT_NAME}_conversion PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

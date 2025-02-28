@@ -1,6 +1,7 @@
 import os
 import sys
 from enum import Enum
+import shutil
 
 # Get an environment variable (returns None if not found)
 raisin_ws = os.getenv("RAISIN_WS")
@@ -225,7 +226,6 @@ def create_interface(destination_dir, project_directory):
         shutil.copy2(srv_file, srv_dir)
 
     dependencies = find_dependencies(project_directory)
-    dependencies.add("raisin_bridge_helper")
     generate_package_xml(project_name, dependencies, destination_dir)
     generate_cmakelists_txt(project_name, dependencies, destination_dir)
 
@@ -261,6 +261,7 @@ def create_interface(destination_dir, project_directory):
             output_file.write(conversion_content)
 
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
+        output_file.write('#include <raisin_bridge_helper/conversion.hpp>\n\n')
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
@@ -290,69 +291,16 @@ def main():
     ## helpers for finding interfaces
     helper_dir = os.path.join(destination_dir, 'helper')
     os.makedirs(helper_dir)
-    generate_package_xml('raisin_bridge_helper', [], helper_dir)
-
-    ## cmakelist file for helper
-
+    helper_include_dir= os.path.join(helper_dir, 'include', 'raisin_bridge_helper')
+    os.makedirs(helper_include_dir)
+    package_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'package.xml')
+    shutil.copy(package_template, helper_dir)
     cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'CMakeLists.txt')
-    with open(cmakelists_template, 'r') as template_file:
-        cmakelists_content = template_file.read()
-
-    content = ""
-    # for project in project_names:
-    #     content += f"\nfind_package({project} REQUIRED)"
-    content += "\nfind_package(ament_cmake REQUIRED)\n"
-    content += "\nadd_library(raisin_bridge_helper conversion.cpp"
-    # for project in project_names:
-    #     content += f" ../interfaces/{project}/conversion.cpp"
-    # content += ")\nament_target_dependencies(raisin_bridge_helper"
-    # for project in project_names:
-    #     content += f" {project}"
-    # content += ")\nament_export_dependencies("
-    # for project in project_names:
-    #     content += f" {project}"
-    content += ")"
-
-    cmakelists_content = cmakelists_content.replace('@@CONTENT@@', content)
-
-    with open(os.path.join(helper_dir, 'CMakeLists.txt'), 'w') as output_file:
-        output_file.write(cmakelists_content)
-
-
-
-    ## conversion.hpp
-
-    with open(os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp'), 'r') as template_file:
-        conversion_hpp_content = template_file.read()
-    os.makedirs(os.path.join(helper_dir, 'include', 'raisin_bridge_helper'), exist_ok=True)
-    # conversion_hpp_content = conversion_hpp_content.replace('@@INCLUDE_DEPENDENCIES@@',  "\n".join(f"#include <{project}/conversion.hpp>" for project in project_names))
-    with open(os.path.join(helper_dir, 'include', 'raisin_bridge_helper', 'conversion.hpp'), 'w') as output_file:
-        output_file.write(conversion_hpp_content)
-
-    ## conversion.cpp
-    with open(os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.cpp'), 'r') as template_file:
-        conversion_cpp_content = template_file.read()
-
-    ## create subscribers, mapping between typename and subscriber
-    subscribers_content = ""
-    publishers_content = ""
-    ros2_to_raisin_content = ""
-    raisin_to_ros2_content = ""
-    for project_directory in topic_directories:
-        project_name = os.path.basename(project_directory)
-        msg_files = find_msg_files(project_directory)
-        for msg_file in msg_files:
-            pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
-            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
-            # ros2_to_raisin_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
-            # ros2_to_raisin_content += f"    \n        register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
-            # raisin_to_ros2_content += f"\n    if (type_name == \"{project_name}/msg/{pascal_str}\")"
-            # raisin_to_ros2_content += f"    \n        register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(topic_name);"
-    conversion_cpp_content = conversion_cpp_content.replace('@@ROS2_TO_RAISIN@@', ros2_to_raisin_content)
-    conversion_cpp_content = conversion_cpp_content.replace('@@RAISIN_TO_ROS2@@', raisin_to_ros2_content)
-
-    with open(os.path.join(helper_dir, 'conversion.cpp'), 'a') as output_file:
-        output_file.write(conversion_cpp_content)
+    shutil.copy(cmakelists_template, helper_dir)
+    conversion_hpp_content = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp')
+    shutil.copy(conversion_hpp_content, helper_include_dir)
+    conversion_cpp_content = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.cpp')
+    shutil.copy(conversion_cpp_content, helper_dir)
 
 if __name__ == '__main__':
     main()
