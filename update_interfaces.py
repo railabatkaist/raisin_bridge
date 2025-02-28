@@ -229,17 +229,6 @@ def create_interface(destination_dir, project_directory):
     generate_package_xml(project_name, dependencies, destination_dir)
     generate_cmakelists_txt(project_name, dependencies, destination_dir)
 
-    with open(os.path.join(destination_dir, "..", "..", 'interfaces.hpp'), 'a') as output_file:
-        for msg_file in msg_files:
-            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', os.path.splitext(os.path.basename(msg_file))[0]).lower()
-            snake_str = snake_str.replace("__", "_")
-            output_file.write('#include <' + project_name + '/msg/' + snake_str + '.hpp>\n')
-        for srv_file in srv_files:
-            snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', os.path.splitext(os.path.basename(srv_file))[0]).lower()
-            snake_str = snake_str.replace("__", "_")
-            output_file.write('#include <' + project_name + '/srv/' + snake_str + '.hpp>\n')
-
-
     with open(os.path.join(destination_dir, 'conversion.cpp'), 'a') as output_file:
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
         for (dependency) in dependencies:
