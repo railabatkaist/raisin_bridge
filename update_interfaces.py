@@ -233,10 +233,12 @@ def create_interface(destination_dir, project_directory):
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
         for (dependency) in dependencies:
             output_file.write("#include <" + dependency + "/conversion.hpp>\n")
+        pascal_snake_dict = dict()
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
+            pascal_snake_dict[pascal_str] = snake_str
             conversion_cpp_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion.cpp')
             with open(conversion_cpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
@@ -248,6 +250,16 @@ def create_interface(destination_dir, project_directory):
             conversion_content = conversion_content.replace('@@CONVERSION_TO_ROS@@', to_ros)
             
             output_file.write(conversion_content)
+
+        output_file.write("\nvoid register_ros2_to_raisin(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n{\n")
+        for pascal_str, snake_str in pascal_snake_dict.items():
+            output_file.write(f"  if(type_name == \"{snake_str}\")\n    register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+        output_file.write("}\n")
+        output_file.write("\nvoid register_raisin_to_ros2(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n{\n")
+        for pascal_str, snake_str in pascal_snake_dict.items():
+            output_file.write(f"  if(type_name == \"{snake_str}\")\n    register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+        output_file.write("}")
+
 
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
         output_file.write('#include <raisin_bridge_helper/conversion.hpp>\n\n')
@@ -263,7 +275,8 @@ def create_interface(destination_dir, project_directory):
             conversion_content = conversion_content.replace('@@TYPE_SNAKE@@', snake_str)
             
             output_file.write(conversion_content)
-
+        with open(os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
+            output_file.write(conversion_hpp_register.read())
 
 def main():
     destination_dir = os.path.join(script_directory, "generated")
