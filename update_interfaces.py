@@ -250,15 +250,16 @@ def create_interface(destination_dir, project_directory):
             conversion_content = conversion_content.replace('@@CONVERSION_TO_ROS@@', to_ros)
             
             output_file.write(conversion_content)
-
-        output_file.write("\nvoid register_ros2_to_raisin(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n{\n")
+        output_file.write("extern \"C\" {")
+        output_file.write("\n  void register_ros2_to_raisin(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n  {\n")
         for pascal_str, snake_str in pascal_snake_dict.items():
-            output_file.write(f"  if(type_name == \"{snake_str}\")\n    register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
-        output_file.write("}\n")
-        output_file.write("\nvoid register_raisin_to_ros2(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n{\n")
+            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+        output_file.write("  }\n}\n")
+        output_file.write("extern \"C\" {")
+        output_file.write("\n  void register_raisin_to_ros2(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n  {\n")
         for pascal_str, snake_str in pascal_snake_dict.items():
-            output_file.write(f"  if(type_name == \"{snake_str}\")\n    register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
-        output_file.write("}")
+            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+        output_file.write("  }\n}")
 
 
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
