@@ -6,10 +6,14 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # find dependencies
+set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)
+find_package(raisin_network REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp REQUIRED)
 
 # TODO: replace the following dependencies with the ones built by myself
+find_package(raisin_bridge_helper)
 @@FIND_DEPENDENCIES@@
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -21,13 +25,33 @@ file(GLOB_RECURSE srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "srv/*.srv")
 rosidl_generate_interfaces(${PROJECT_NAME}
     ${msg_files}
     ${srv_files}
+    @@HAS_DEPENDENCIES@@
     @@DEPENDENCIES@@
 )
 
-install(
-  DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp/${PROJECT_NAME}
-  DESTINATION include/ros2_include/${PROJECT_NAME}
+add_library(${PROJECT_NAME}_conversion SHARED conversion.cpp)
+rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}
+"rosidl_typesupport_cpp")
+ament_target_dependencies(${PROJECT_NAME}_conversion raisin_bridge_helper
+  @@DEPENDENCIES@@)
+target_link_libraries(${PROJECT_NAME}_conversion raisin_network)
+target_include_directories(${PROJECT_NAME}_conversion PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
+target_include_directories(${PROJECT_NAME}_conversion PRIVATE  $ENV{RAISIN_WS}/install)
+
+install(DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
+)
+
+install(DIRECTORY include/
+  DESTINATION include
+)
+
+install(TARGETS ${PROJECT_NAME}_conversion DESTINATION lib/${PROJECT_NAME})
+
+ament_export_include_directories("include/${PROJECT_NAME}")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
