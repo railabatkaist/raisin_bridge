@@ -288,6 +288,9 @@ def main():
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
     topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
     for topic_directory in topic_directories:
+        # as a dependency of raisin_master, these makes conflict in a library name.
+        if (os.path.basename(topic_directory) in ["raisin_thread_pool"]):
+            continue
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 
     project_names = [os.path.basename(topic_directory) for topic_directory in topic_directories]
