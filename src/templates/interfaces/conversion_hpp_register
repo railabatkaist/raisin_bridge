@@ -21,3 +21,4 @@ void register_raisin_to_ros2(BridgeNode * bridgeNode, std::string topic_name){
         }, _1)
     );
 }
+

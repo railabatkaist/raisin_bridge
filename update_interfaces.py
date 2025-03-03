@@ -231,8 +231,8 @@ def create_interface(destination_dir, project_directory):
 
     with open(os.path.join(destination_dir, 'conversion.cpp'), 'a') as output_file:
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
-        for (dependency) in dependencies:
-            output_file.write("#include <" + dependency + "/conversion.hpp>\n")
+        with open(os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
+            output_file.write(conversion_hpp_register.read())
         pascal_snake_dict = dict()
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
@@ -263,6 +263,8 @@ def create_interface(destination_dir, project_directory):
 
 
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
+        for (dependency) in dependencies:
+            output_file.write("#include <" + dependency + "/conversion.hpp>\n")
         output_file.write('#include <raisin_bridge_helper/conversion.hpp>\n\n')
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
@@ -276,8 +278,6 @@ def create_interface(destination_dir, project_directory):
             conversion_content = conversion_content.replace('@@TYPE_SNAKE@@', snake_str)
             
             output_file.write(conversion_content)
-        with open(os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
-            output_file.write(conversion_hpp_register.read())
 
 def main():
     destination_dir = os.path.join(script_directory, "generated")
@@ -285,7 +285,7 @@ def main():
     os.makedirs(destination_dir)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
-    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces'])
+    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces', 'messages/std_msgs'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 

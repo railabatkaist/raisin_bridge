@@ -22,14 +22,14 @@ find_package(raisin_bridge_helper)
 file(GLOB_RECURSE msg_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "msg/*msg")
 file(GLOB_RECURSE srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "srv/*.srv")
 
-rosidl_generate_interfaces(${PROJECT_NAME}_ros2
+rosidl_generate_interfaces(${PROJECT_NAME}
     ${msg_files}
     ${srv_files}
     @@DEPENDENCIES@@
 )
 
 add_library(${PROJECT_NAME}_conversion SHARED conversion.cpp)
-rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}_ros2
+rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}
 "rosidl_typesupport_cpp")
 ament_target_dependencies(${PROJECT_NAME}_conversion raisin_bridge_helper)
 target_link_libraries(${PROJECT_NAME}_conversion raisin_network)

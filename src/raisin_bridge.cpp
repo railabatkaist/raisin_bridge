@@ -17,21 +17,41 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "include/conversion.hpp"
-
-// #include "raisin_interfaces/include/raisin_interfaces/raisin_interfaces/msg/imu.hpp"
+#include "raisin_bridge_helper/conversion.hpp"
 
 int main(int argc, char * argv[])
 {
-  std::string serverId = "server";
-  std::string clientId = "raisin_bridge";
-  std::string networkInterface;
-
   rclcpp::init(argc, argv);
-  std::shared_ptr<BridgeNode> bridge_node = std::make_shared<BridgeNode>(serverId, clientId, networkInterface);
-  
-  bridge_node->register_raisin_to_ros2<std_msgs::msg::String, raisin::std_msgs::msg::String>("imu");
-  bridge_node->register_ros2_to_raisin<std_msgs::msg::String, raisin::std_msgs::msg::String>("chatter");
+  std::shared_ptr<BridgeNode> bridge_node = std::make_shared<BridgeNode>();
+  bridge_node->connect();
+
+  bridge_node->declare_parameter<std::vector<std::string>>("topics_ros2_to_raisin", {});
+  bridge_node->declare_parameter<std::vector<std::string>>("topics_raisin_to_ros2", {});
+
+  // Get parameters
+  std::vector<std::string> topics_ros2_to_raisin, topics_raisin_to_ros2;
+  bridge_node->get_parameter("topics_ros2_to_raisin", topics_ros2_to_raisin);
+  bridge_node->get_parameter("topics_raisin_to_ros2", topics_raisin_to_ros2);
+
+  for (const auto& topic : topics_ros2_to_raisin) {
+    size_t pos = topic.find(", ");
+    if (pos != std::string::npos) {
+      std::string type = topic.substr(0, pos);
+      std::string name = topic.substr(pos + 2);
+
+      bridge_node->register_ros2_to_raisin(type, name);
+    }
+  }
+
+  for (const auto& topic : topics_raisin_to_ros2) {
+    size_t pos = topic.find(", ");
+    if (pos != std::string::npos) {
+      std::string type = topic.substr(0, pos);
+      std::string name = topic.substr(pos + 2);
+
+      bridge_node->register_raisin_to_ros2(type, name);
+    }
+  }
 
   rclcpp::spin(bridge_node);
 
