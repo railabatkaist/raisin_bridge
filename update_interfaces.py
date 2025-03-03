@@ -61,10 +61,11 @@ def generate_cmakelists_txt(project_name, dependencies, destination_dir):
     cmakelists_content = cmakelists_content.replace('@@FIND_DEPENDENCIES@@',  "\n".join(f"find_package({dep})" for dep in dependencies))
 
     if (dependencies):
-        cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  "DEPENDENCIES  " + " ".join(dependencies))
+        cmakelists_content = cmakelists_content.replace('@@HAS_DEPENDENCIES@@',  "DEPENDENCIES")
+        cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(dependencies))
     else:
+        cmakelists_content = cmakelists_content.replace('@@HAS_DEPENDENCIES@@',  "")
         cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  "")
-
 
     with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
@@ -285,7 +286,7 @@ def main():
     os.makedirs(destination_dir)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
-    topic_directories = find_msg_directories(raisin_ws, ['messages/builtin_interfaces', 'messages/std_msgs'])
+    topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
     for topic_directory in topic_directories:
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
 

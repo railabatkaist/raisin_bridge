@@ -25,13 +25,15 @@ file(GLOB_RECURSE srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "srv/*.srv")
 rosidl_generate_interfaces(${PROJECT_NAME}
     ${msg_files}
     ${srv_files}
+    @@HAS_DEPENDENCIES@@
     @@DEPENDENCIES@@
 )
 
 add_library(${PROJECT_NAME}_conversion SHARED conversion.cpp)
 rosidl_target_interfaces(${PROJECT_NAME}_conversion ${PROJECT_NAME}
 "rosidl_typesupport_cpp")
-ament_target_dependencies(${PROJECT_NAME}_conversion raisin_bridge_helper)
+ament_target_dependencies(${PROJECT_NAME}_conversion raisin_bridge_helper
+  @@DEPENDENCIES@@)
 target_link_libraries(${PROJECT_NAME}_conversion raisin_network)
 target_include_directories(${PROJECT_NAME}_conversion PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -43,7 +45,13 @@ install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
 )
 
+install(DIRECTORY include/
+  DESTINATION include
+)
+
 install(TARGETS ${PROJECT_NAME}_conversion DESTINATION lib/${PROJECT_NAME})
+
+ament_export_include_directories("include/${PROJECT_NAME}")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
