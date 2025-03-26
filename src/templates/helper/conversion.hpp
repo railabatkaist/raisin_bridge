@@ -17,6 +17,10 @@ class BridgeNode : public rclcpp::Node
   : rclcpp::Node("bridge_node")
   {
   }
+  ~BridgeNode()
+  {
+    raisin_node_->cleanupResources();
+  }
   void connect();
   void register_ros2_to_raisin(std::string type_name, std::string topic_name);
   void register_raisin_to_ros2(std::string type_name, std::string topic_name);

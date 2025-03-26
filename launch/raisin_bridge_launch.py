@@ -16,6 +16,7 @@ def generate_launch_description():
             package='raisin_bridge',
             executable='raisin_bridge_node',
             parameters=[config]
+            , output='screen'
         )
     ])
 
