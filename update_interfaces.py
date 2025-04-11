@@ -58,14 +58,7 @@ def generate_cmakelists_txt(project_name, dependencies, destination_dir):
         cmakelists_content = template_file.read()
         
     cmakelists_content = cmakelists_content.replace('@@PROJECT_NAME@@', project_name)
-    cmakelists_content = cmakelists_content.replace('@@FIND_DEPENDENCIES@@',  "\n".join(f"find_package({dep})" for dep in dependencies))
-
-    if (dependencies):
-        cmakelists_content = cmakelists_content.replace('@@HAS_DEPENDENCIES@@',  "DEPENDENCIES")
-        cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(dependencies))
-    else:
-        cmakelists_content = cmakelists_content.replace('@@HAS_DEPENDENCIES@@',  "")
-        cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  "")
+    cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(dependencies))
 
     with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
         output_file.write(cmakelists_content)
@@ -230,6 +223,8 @@ def create_interface(destination_dir, project_directory):
     generate_package_xml(project_name, dependencies, destination_dir)
     generate_cmakelists_txt(project_name, dependencies, destination_dir)
 
+    with open(os.path.join(destination_dir, 'conversion.cpp'), 'w') as output_file:
+        pass  # Opening in 'w' mode clears the file content
     with open(os.path.join(destination_dir, 'conversion.cpp'), 'a') as output_file:
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
         with open(os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
@@ -263,6 +258,8 @@ def create_interface(destination_dir, project_directory):
         output_file.write("  }\n}")
 
 
+    with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'w') as output_file:
+        pass  # Opening in 'w' mode clears the file content
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
         for (dependency) in dependencies:
             output_file.write("#include <" + dependency + "/conversion.hpp>\n")
@@ -282,13 +279,11 @@ def create_interface(destination_dir, project_directory):
 
 def main():
     destination_dir = os.path.join(script_directory, "generated")
-    delete_directory(destination_dir)
-    os.makedirs(destination_dir)
+    os.makedirs(destination_dir, exist_ok=True)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
     topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
-    for topic_directory in topic_directories:
-        # as a dependency of raisin_master, these makes conflict in a library name.
+    for topic_directory in topic_directories:        # as a dependency of raisin_master, these makes conflict in a library name.
         if (os.path.basename(topic_directory) in ["raisin_thread_pool"]):
             continue
         create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
@@ -297,9 +292,9 @@ def main():
 
     ## helpers for finding interfaces
     helper_dir = os.path.join(destination_dir, 'helper')
-    os.makedirs(helper_dir)
+    os.makedirs(helper_dir, exist_ok=True)
     helper_include_dir= os.path.join(helper_dir, 'include', 'raisin_bridge_helper')
-    os.makedirs(helper_include_dir)
+    os.makedirs(helper_include_dir, exist_ok=True)
     package_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'package.xml')
     shutil.copy(package_template, helper_dir)
     cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'CMakeLists.txt')

@@ -22,7 +22,7 @@ void BridgeNode::connect()
       "test",
       threads,
       netInterface);
-
+  clientNetwork->launchServer();
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   // Attempt to connect to the server
