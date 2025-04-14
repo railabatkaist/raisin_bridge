@@ -21,6 +21,8 @@
 
 int main(int argc, char * argv[])
 {
+  raisin::LockRecorder::getInstance() = std::make_shared<raisin::LockRecorder>();
+
   rclcpp::init(argc, argv);
   std::shared_ptr<BridgeNode> bridge_node = std::make_shared<BridgeNode>();
   bridge_node->connect();

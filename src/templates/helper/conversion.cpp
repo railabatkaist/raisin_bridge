@@ -69,6 +69,8 @@ void BridgeNode::register_ros2_to_raisin(std::string type_name, std::string topi
     std::cerr << "Cannot load symbol 'register_ros2_to_raisin': " << dlerror() << '\n';
   register_ros2_to_raisin(this, type_name, topic_name);
   dlclose(handle);
+
+  loaded_libraries_.push_back(handle); // keep it alive
 }
 void BridgeNode::register_raisin_to_ros2(std::string type_name, std::string topic_name)
 {
@@ -87,4 +89,6 @@ void BridgeNode::register_raisin_to_ros2(std::string type_name, std::string topi
     std::cerr << "Cannot load symbol 'register_raisin_to_ros2': " << dlerror() << '\n';
   register_raisin_to_ros2(this, type_name, topic_name);
   dlclose(handle);
+
+  loaded_libraries_.push_back(handle); // keep it alive
 }

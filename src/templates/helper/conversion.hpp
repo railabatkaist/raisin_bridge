@@ -19,6 +19,11 @@ class BridgeNode : public rclcpp::Node
   }
   ~BridgeNode()
   {
+    for (void* handle : loaded_libraries_) {
+      if (handle) {
+        dlclose(handle);
+      }
+    }
     raisin_node_->cleanupResources();
   }
   void connect();
@@ -31,6 +36,8 @@ class BridgeNode : public rclcpp::Node
   std::map<std::string, std::any> ros2_subscriptions;
   std::map<std::string, std::any> raisin_publishers;
   std::map<std::string, std::any> raisin_subscribers;
+  
+  std::vector<void*> loaded_libraries_;  // or std::unordered_map if needed
   
   typedef void (* register_t) (BridgeNode * bridgeNode, std::string type_name, std::string topic_name);
 };
