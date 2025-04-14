@@ -3,11 +3,15 @@ bridge_node:
       id: "raisin_bridge"
       network_type: 0 # 0 for TCP, 1 for WEBSOCKET
       network_interface: "" # for TCP
-      peer_id: "railab_raibo" # for TCP
+
+      peer_id: "server" # for TCP
       peer_ip: "192.168.12.1" # for WEBSOCKET
       topics_ros2_to_raisin: # format should be the vector of "$type, $name"
-         ["std_msgs/msg/string, string1",
-         "std_msgs/msg/string, string2"]
+         # [""]
+         ["geometry_msgs/msg/pose, generator/raw_pose",
+         "std_msgs/msg/float64_multi_array, generator/ik_solutions"]
       topics_raisin_to_ros2: # format should be the vector of "$type, $name"
-         ["std_msgs/msg/string, string3",
-         "std_msgs/msg/string, string4"]
+         # [""]
+         # ["std_msgs/msg/string, string",
+         # "std_msgs/msg/string, string4"]
+         [""]

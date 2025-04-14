@@ -282,7 +282,7 @@ def main():
     os.makedirs(destination_dir, exist_ok=True)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
-    topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
+    topic_directories = find_msg_directories(raisin_ws, ['install/messages/builtin_interfaces', 'install/messages/std_msgs', 'install/messages/geometry_msgs'])
     for topic_directory in topic_directories:        # as a dependency of raisin_master, these makes conflict in a library name.
         if (os.path.basename(topic_directory) in ["raisin_thread_pool"]):
             continue
