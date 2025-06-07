@@ -35,19 +35,17 @@ install(
 )
 install(DIRECTORY include/ DESTINATION include)
 
-# add_executable(raisin_bridge_node src/main.cpp)
+add_executable(raisin_bridge_node src/main.cpp)
 
-# target_link_libraries(raisin_bridge_node raisin_network)
-# target_link_libraries(raisin_bridge_node raisin_bridge)
-# target_include_directories(raisin_bridge_node PRIVATE ../generated)
-# target_include_directories(raisin_bridge_node PRIVATE  $ENV{RAISIN_WS}/install)
-# target_include_directories(raisin_bridge_node PRIVATE  ../generated/interfaces)
+ament_target_dependencies(raisin_bridge_node rclcpp)
+target_link_libraries(raisin_bridge_node raisin_network raisin_bridge)
+target_include_directories(raisin_bridge_node PRIVATE  $ENV{RAISIN_WS}/install)
 
-# install(TARGETS
-# raisin_bridge_node
-#   DESTINATION lib/${PROJECT_NAME})
+install(TARGETS
+raisin_bridge_node
+  DESTINATION lib/${PROJECT_NAME})
 
-# install(
-#   DIRECTORY ../launch ../config
-#   DESTINATION share/${PROJECT_NAME})
+install(
+  DIRECTORY launch config
+  DESTINATION share/${PROJECT_NAME})
 ament_package()

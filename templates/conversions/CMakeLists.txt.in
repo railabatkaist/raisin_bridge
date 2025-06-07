@@ -23,6 +23,7 @@ ament_target_dependencies(@@INTERFACE_NAME@@_conversion @@INTERFACE_NAME@@)
 ament_target_dependencies(@@INTERFACE_NAME@@_conversion raisin_bridge)
 foreach(PACKAGE ${DEPENDENCIES})
   ament_target_dependencies(@@INTERFACE_NAME@@_conversion ${PACKAGE})
+  ament_export_dependencies(${PACKAGE})
 endforeach()
 target_link_libraries(@@INTERFACE_NAME@@_conversion raisin_network)
 target_include_directories(@@INTERFACE_NAME@@_conversion PUBLIC
