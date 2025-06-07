@@ -11,21 +11,21 @@ void BridgeNode::connect()
     } else {
       std::cerr<<"invalid network type"<<std::endl;
     }
+    if (!connection_) {
+      if (networkType_ == 0) {
+        std::cerr<<"Failed to connect to server " << peerId_ << " at " << netInterface_ <<std::endl;
+      } else if (networkType_ == 1) {
+        std::cerr<<"Failed to connect to server " << peerIp_ <<std::endl;
+      }
+    } else {
+      if (networkType_ == 0) {
+        std::cout<<"Connected to server " << peerId_ << " at " << netInterface_ <<std::endl;
+      } else if (networkType_ == 1) {
+        std::cout<<"Connected to connect to server " << peerIp_ <<std::endl;
+      }
+    }
   }
 
-  if (!connection_) {
-    if (networkType_ == 0) {
-      std::cerr<<"Failed to connect to server " << peerId_ << " at " << netInterface_ <<std::endl;
-    } else if (networkType_ == 1) {
-      std::cerr<<"Failed to connect to server " << peerIp_ <<std::endl;
-    }
-  } else {
-    if (networkType_ == 0) {
-      std::cout<<"Connected to server " << peerId_ << " at " << netInterface_ <<std::endl;
-    } else if (networkType_ == 1) {
-      std::cout<<"Connected to connect to server " << peerIp_ <<std::endl;
-    }
-  }
 
 }
 
@@ -37,7 +37,7 @@ void BridgeNode::register_ros2_to_raisin(std::string type_name, std::string topi
   std::getline(data, temp,'/');
   std::getline(data, type_name,'/');
 
-  std::string filePath = ament_index_cpp::get_package_prefix(project_name) + "/lib/" + project_name + "/lib" + project_name + "_conversion.so";
+  std::string filePath = ament_index_cpp::get_package_prefix(project_name + "_conversion") + "/lib/" + project_name + "/lib" + project_name + "_conversion.so";
   void* handle = dlopen(filePath.c_str(), RTLD_LAZY);
   if (!handle)
     std::cerr << "Cannot open library: " << dlerror() << '\n';
@@ -57,7 +57,7 @@ void BridgeNode::register_raisin_to_ros2(std::string type_name, std::string topi
   std::getline(data, temp,'/');
   std::getline(data, type_name,'/');
   
-  std::string filePath = ament_index_cpp::get_package_prefix(project_name) + "/lib/" + project_name + "/lib" + project_name + "_conversion.so";
+  std::string filePath = ament_index_cpp::get_package_prefix(project_name + "_conversion") + "/lib/" + project_name + "/lib" + project_name + "_conversion.so";
   void* handle = dlopen(filePath.c_str(), RTLD_LAZY);  if (!handle)
     std::cerr << "Cannot open library: " << dlerror() << '\n';
   dlerror();

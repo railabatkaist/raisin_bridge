@@ -187,10 +187,8 @@ def create_interface(destination_dir, project_directory):
     ## make directory and copy files
     msg_dir = os.path.join(destination_dir, 'msg')
     srv_dir = os.path.join(destination_dir, 'srv')
-    conversion_header_dir = os.path.join(destination_dir, 'include', interface_name)
     os.makedirs(msg_dir, exist_ok=True)
     os.makedirs(srv_dir, exist_ok=True)
-    os.makedirs(conversion_header_dir, exist_ok=True)
     msg_files = find_msg_files(project_directory)
     srv_files = find_srv_files(project_directory)
     for msg_file in msg_files:
@@ -282,12 +280,12 @@ def create_conversion(destination_dir, project_directory):
         output_file.write("extern \"C\" {")
         output_file.write("\n  void register_ros2_to_raisin(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n  {\n")
         for pascal_str, snake_str in pascal_snake_dict.items():
-            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_ros2_to_raisin<{interface_name}::msg::{pascal_str}, raisin::{interface_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+            output_file.write(f"    if(type_name == \"{pascal_str}\")\n      register_ros2_to_raisin<{interface_name}::msg::{pascal_str}, raisin::{interface_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
         output_file.write("  }\n}\n")
         output_file.write("extern \"C\" {")
         output_file.write("\n  void register_raisin_to_ros2(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n  {\n")
         for pascal_str, snake_str in pascal_snake_dict.items():
-            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_raisin_to_ros2<{interface_name}::msg::{pascal_str}, raisin::{interface_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+            output_file.write(f"    if(type_name == \"{pascal_str}\")\n      register_raisin_to_ros2<{interface_name}::msg::{pascal_str}, raisin::{interface_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
         output_file.write("  }\n}")
 
 
