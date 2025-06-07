@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.8)
+project(@@INTERFACE_NAME@@)
+set(DEPENDENCIES @@DEPENDENCIES@@)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+foreach(PACKAGE ${DEPENDENCIES})
+  find_package(${PACKAGE} REQUIRED)
+endforeach()
+
+file(GLOB_RECURSE msg_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "msg/*msg")
+file(GLOB_RECURSE srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "srv/*.srv")
+
+if (NOT DEPENDENCIES)
+  rosidl_generate_interfaces(${PROJECT_NAME}
+      ${msg_files}
+      ${srv_files}
+  )
+else()
+  rosidl_generate_interfaces(${PROJECT_NAME}
+      ${msg_files}
+      ${srv_files}
+      DEPENDENCIES
+      ${DEPENDENCIES}
+  )
+endif()
+
+ament_package()

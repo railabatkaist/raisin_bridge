@@ -41,29 +41,6 @@ def get_base_type(type_str: str) -> str:
     return stripped_data_type.split('[')[0]  # Get the part before '['
 
 
-def generate_package_xml(project_name, dependencies, destination_dir):
-    package_template = os.path.join(script_directory, 'templates', 'package.xml.in')
-    with open(package_template, 'r') as template_file:
-        package_content = template_file.read()
-        
-    package_content = package_content.replace('@@PROJECT_NAME@@', project_name)
-    package_content = package_content.replace('@@DEPENDENCIES@@',  "\n  ".join(f"<depend>{dep}</depend>" for dep in dependencies))
-
-    with open(os.path.join(destination_dir, 'package.xml'), 'w') as output_file:
-        output_file.write(package_content)
-
-def generate_cmakelists_txt(project_name, dependencies, destination_dir):
-    cmakelists_template = os.path.join(script_directory, 'templates', 'CMakeLists.txt.in')
-    with open(cmakelists_template, 'r') as template_file:
-        cmakelists_content = template_file.read()
-        
-    cmakelists_content = cmakelists_content.replace('@@PROJECT_NAME@@', project_name)
-    cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(dependencies))
-
-    with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
-        output_file.write(cmakelists_content)
-
-
 def conversion_str(msg_file):
     with open(msg_file, 'r') as msg_file_content:
         lines = msg_file_content.readlines()
@@ -129,7 +106,7 @@ def conversion_str(msg_file):
     return to_raisin, to_ros
 
 def find_dependencies(project_directory):
-    project_name = os.path.basename(project_directory)
+    interface_name = os.path.basename(project_directory)
 
     msg_files = find_msg_files(project_directory)
     srv_files = find_srv_files(project_directory)
@@ -164,7 +141,7 @@ def find_dependencies(project_directory):
                 
                 dependency = base_type.rpartition("/")[0]
 
-                if dependency and dependency != project_name:
+                if dependency and dependency != interface_name:
                     dependencies.add(dependency)
 
     for srv_file in srv_files:
@@ -195,7 +172,7 @@ def find_dependencies(project_directory):
                 
                 dependency = base_type.rpartition("/")[0]
                 
-                if dependency and dependency != project_name:
+                if dependency and dependency != interface_name:
                     dependencies.add(dependency)
 
     return dependencies
@@ -203,12 +180,14 @@ def find_dependencies(project_directory):
 
 
 def create_interface(destination_dir, project_directory):
-    project_name = os.path.basename(project_directory)
-    destination_dir = os.path.join(destination_dir, project_name)
+    interface_name = os.path.basename(project_directory)
+    destination_dir = os.path.join(destination_dir, 'interfaces', interface_name)
+    dependencies = find_dependencies(project_directory)
 
+    ## make directory and copy files
     msg_dir = os.path.join(destination_dir, 'msg')
     srv_dir = os.path.join(destination_dir, 'srv')
-    conversion_header_dir = os.path.join(destination_dir, 'include', project_name)
+    conversion_header_dir = os.path.join(destination_dir, 'include', interface_name)
     os.makedirs(msg_dir, exist_ok=True)
     os.makedirs(srv_dir, exist_ok=True)
     os.makedirs(conversion_header_dir, exist_ok=True)
@@ -219,15 +198,69 @@ def create_interface(destination_dir, project_directory):
     for srv_file in srv_files:
         shutil.copy2(srv_file, srv_dir)
 
-    dependencies = find_dependencies(project_directory)
-    generate_package_xml(project_name, dependencies, destination_dir)
-    generate_cmakelists_txt(project_name, dependencies, destination_dir)
+    ## packages.xml
+    package_template = os.path.join(script_directory, 'templates', 'interfaces', 'package.xml.in')
+    with open(package_template, 'r') as template_file:
+        package_content = template_file.read()
+        
+    package_content = package_content.replace('@@INTERFACE_NAME@@', interface_name)
+    package_content = package_content.replace('@@DEPENDENCIES@@',  "\n  ".join(f"<depend>{dep}</depend>" for dep in dependencies))
 
+    with open(os.path.join(destination_dir, 'package.xml'), 'w') as output_file:
+        output_file.write(package_content)
+
+    ## cmakelists.xml
+    cmakelists_template = os.path.join(script_directory, 'templates', 'interfaces', 'CMakeLists.txt.in')
+    with open(cmakelists_template, 'r') as template_file:
+        cmakelists_content = template_file.read()
+        
+    cmakelists_content = cmakelists_content.replace('@@INTERFACE_NAME@@', interface_name)
+    cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(dependencies))
+
+    with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
+        output_file.write(cmakelists_content)
+
+
+
+def create_conversion(destination_dir, project_directory):
+    interface_name = os.path.basename(project_directory)
+    destination_dir = os.path.join(destination_dir, 'conversions', interface_name)
+    dependencies = find_dependencies(project_directory)
+
+    ## make directory and configure interfaces
+    msg_files = find_msg_files(project_directory)
+    srv_files = find_srv_files(project_directory)
+    conversion_header_dir = os.path.join(destination_dir, 'include', interface_name)
+    os.makedirs(conversion_header_dir, exist_ok=True)
+
+    ## packages.xml
+    package_template = os.path.join(script_directory, 'templates', 'conversions', 'package.xml.in')
+    with open(package_template, 'r') as template_file:
+        package_content = template_file.read()
+        
+    package_content = package_content.replace('@@INTERFACE_NAME@@', interface_name)
+    package_content = package_content.replace('@@DEPENDENCIES@@',  "\n  ".join(f"<depend>{dep}_conversion</depend>" for dep in dependencies))
+
+    with open(os.path.join(destination_dir, 'package.xml'), 'w') as output_file:
+        output_file.write(package_content)
+
+    ## cmakelists.xml
+    cmakelists_template = os.path.join(script_directory, 'templates', 'conversions', 'CMakeLists.txt.in')
+    with open(cmakelists_template, 'r') as template_file:
+        cmakelists_content = template_file.read()
+        
+    cmakelists_content = cmakelists_content.replace('@@INTERFACE_NAME@@', interface_name)
+    cmakelists_content = cmakelists_content.replace('@@DEPENDENCIES@@',  " ".join(f"{dep}_conversion" for dep in dependencies))
+
+    with open(os.path.join(destination_dir, 'CMakeLists.txt'), 'w') as output_file:
+        output_file.write(cmakelists_content)
+
+    ## conversion.cpp
     with open(os.path.join(destination_dir, 'conversion.cpp'), 'w') as output_file:
         pass  # Opening in 'w' mode clears the file content
     with open(os.path.join(destination_dir, 'conversion.cpp'), 'a') as output_file:
-        output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
-        with open(os.path.join(script_directory, 'templates', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
+        output_file.write("#include <" + interface_name + "/conversion.hpp>\n\n")
+        with open(os.path.join(script_directory, 'templates', 'conversions', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
             output_file.write(conversion_hpp_register.read())
         pascal_snake_dict = dict()
         for msg_file in msg_files:
@@ -235,10 +268,10 @@ def create_interface(destination_dir, project_directory):
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
             pascal_snake_dict[pascal_str] = snake_str
-            conversion_cpp_template = os.path.join(script_directory, 'templates', 'conversion.cpp.in')
+            conversion_cpp_template = os.path.join(script_directory, 'templates', 'conversions', 'conversion.cpp.in')
             with open(conversion_cpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
-            conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
+            conversion_content = conversion_content.replace('@@INTERFACE_NAME@@', interface_name)
             conversion_content = conversion_content.replace('@@TYPE_PASCAL@@', pascal_str)
             conversion_content = conversion_content.replace('@@TYPE_SNAKE@@', snake_str)
             to_raisin, to_ros = conversion_str(msg_file)
@@ -249,15 +282,16 @@ def create_interface(destination_dir, project_directory):
         output_file.write("extern \"C\" {")
         output_file.write("\n  void register_ros2_to_raisin(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n  {\n")
         for pascal_str, snake_str in pascal_snake_dict.items():
-            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_ros2_to_raisin<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_ros2_to_raisin<{interface_name}::msg::{pascal_str}, raisin::{interface_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
         output_file.write("  }\n}\n")
         output_file.write("extern \"C\" {")
         output_file.write("\n  void register_raisin_to_ros2(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n  {\n")
         for pascal_str, snake_str in pascal_snake_dict.items():
-            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_raisin_to_ros2<{project_name}::msg::{pascal_str}, raisin::{project_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+            output_file.write(f"    if(type_name == \"{snake_str}\")\n      register_raisin_to_ros2<{interface_name}::msg::{pascal_str}, raisin::{interface_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
         output_file.write("  }\n}")
 
 
+    ## conversion.hpp
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'w') as output_file:
         pass  # Opening in 'w' mode clears the file content
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
@@ -268,10 +302,10 @@ def create_interface(destination_dir, project_directory):
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
-            conversion_hpp_template = os.path.join(script_directory, 'templates', 'conversion.hpp.in')
+            conversion_hpp_template = os.path.join(script_directory, 'templates', 'conversions', 'conversion.hpp.in')
             with open(conversion_hpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
-            conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
+            conversion_content = conversion_content.replace('@@INTERFACE_NAME@@', interface_name)
             conversion_content = conversion_content.replace('@@TYPE_PASCAL@@', pascal_str)
             conversion_content = conversion_content.replace('@@TYPE_SNAKE@@', snake_str)
             
@@ -280,6 +314,8 @@ def create_interface(destination_dir, project_directory):
 def main():
     destination_dir = os.path.join(script_directory, "generated")
     os.makedirs(destination_dir, exist_ok=True)
+    os.makedirs(os.path.join(destination_dir, 'interfaces'), exist_ok=True)
+    os.makedirs(os.path.join(destination_dir, 'conversions'), exist_ok=True)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
     topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
@@ -287,8 +323,8 @@ def main():
         if (os.path.basename(topic_directory) in ["raisin_thread_pool"]):
             continue
         create_interface(os.path.join(destination_dir), topic_directory)
+        create_conversion(os.path.join(destination_dir), topic_directory)
 
-    project_names = [os.path.basename(topic_directory) for topic_directory in topic_directories]
 
 if __name__ == '__main__':
     main()
