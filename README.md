@@ -22,6 +22,7 @@ git clone git@github.com:railabatkaist/raisin_bridge.git
 python3 raisin_bridge/update_interfaces.py
 cd ..
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+## you can add "--packages-up-to $INTERFACE_conversion" to build necessary packages only
 ```
 
 Build will take more than 5 minutes, but you don't have to build everytime.

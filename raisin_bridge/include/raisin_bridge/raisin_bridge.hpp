@@ -16,6 +16,32 @@ class BridgeNode : public rclcpp::Node
   BridgeNode()
   : rclcpp::Node("bridge_node")
   {
+    this->declare_parameter<std::string>("id", "raisin_bridge");
+    this->declare_parameter<int>("network_type", 0);
+    this->declare_parameter<std::string>("peer_id", "");
+    this->declare_parameter<std::string>("peer_ip", "");
+    this->declare_parameter<std::string>("network_interface", "");
+
+    this->get_parameter("id", id_);
+    this->get_parameter("peer_id", peerId_);
+    this->get_parameter("peer_ip", peerIp_);
+    this->get_parameter("network_type", networkType_);
+    this->get_parameter("network_interface", netInterface_);
+
+    std::vector<std::vector<std::string>> threads = {{"main"}};
+    clientNetwork_ = std::make_shared<raisin::Network>(
+        id_,
+        "test",
+        threads,
+        netInterface_);
+    clientNetwork_->launchServer();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    auto period_ms = std::chrono::milliseconds(static_cast<int64_t>(1000.0));
+    connection_timer_ = this->create_wall_timer(
+      period_ms, std::bind(&BridgeNode::connect, this));
+
+    raisin_node_ = std::make_unique<raisin::Node>(clientNetwork_);
   }
   ~BridgeNode()
   {
@@ -32,6 +58,11 @@ class BridgeNode : public rclcpp::Node
   
   std::unique_ptr<raisin::Node> raisin_node_;
   std::shared_ptr<raisin::Remote::Connection> connection_;
+  std::shared_ptr<raisin::Network> clientNetwork_;
+  int networkType_;
+  std::string id_, peerId_, peerIp_, netInterface_;
+  rclcpp::TimerBase::SharedPtr connection_timer_;
+
   std::map<std::string, std::any> ros2_publishers;
   std::map<std::string, std::any> ros2_subscriptions;
   std::map<std::string, std::any> raisin_publishers;

@@ -2,53 +2,31 @@
 
 void BridgeNode::connect()
 {
-  this->declare_parameter<std::string>("id", "raisin_bridge");
-  this->declare_parameter<int>("network_type", 0);
-  this->declare_parameter<std::string>("peer_id", "");
-  this->declare_parameter<std::string>("peer_ip", "");
-  this->declare_parameter<std::string>("network_interface", "");
-
-  int networkType;
-  std::string id, peerId, peerIp, netInterface;;
-  this->get_parameter("id", id);
-  this->get_parameter("peer_id", peerId);
-  this->get_parameter("peer_ip", peerIp);
-  this->get_parameter("network_type", networkType);
-  this->get_parameter("network_interface", netInterface);
-
-  std::vector<std::vector<std::string>> threads = {{"main"}};
-  std::shared_ptr<raisin::Network> clientNetwork = std::make_shared<raisin::Network>(
-      id,
-      "test",
-      threads,
-      netInterface);
-  clientNetwork->launchServer();
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-
   // Attempt to connect to the server
-  if (networkType == 0) {
-    connection_ = clientNetwork->connect(peerId);
-  } else if (networkType == 1) {
-    connection_ = clientNetwork->connect(peerIp, 9002);
-  } else {
-    std::cerr<<"invalid network type"<<std::endl;
+  if (!connection_) {
+    if (networkType_ == 0) {
+      connection_ = clientNetwork_->connect(peerId_);
+    } else if (networkType_ == 1) {
+      connection_ = clientNetwork_->connect(peerIp_, 9002);
+    } else {
+      std::cerr<<"invalid network type"<<std::endl;
+    }
   }
 
   if (!connection_) {
-    if (networkType == 0) {
-      std::cerr<<"Failed to connect to server " << peerId << " at " << netInterface <<std::endl;
-    } else if (networkType == 1) {
-      std::cerr<<"Failed to connect to server " << peerIp <<std::endl;
+    if (networkType_ == 0) {
+      std::cerr<<"Failed to connect to server " << peerId_ << " at " << netInterface_ <<std::endl;
+    } else if (networkType_ == 1) {
+      std::cerr<<"Failed to connect to server " << peerIp_ <<std::endl;
     }
   } else {
-    if (networkType == 0) {
-      std::cout<<"Connected to server " << peerId << " at " << netInterface <<std::endl;
-    } else if (networkType == 1) {
-      std::cout<<"Connected to connect to server " << peerIp <<std::endl;
+    if (networkType_ == 0) {
+      std::cout<<"Connected to server " << peerId_ << " at " << netInterface_ <<std::endl;
+    } else if (networkType_ == 1) {
+      std::cout<<"Connected to connect to server " << peerIp_ <<std::endl;
     }
   }
 
-  raisin_node_ = std::make_unique<raisin::Node>(clientNetwork);
 }
 
 void BridgeNode::register_ros2_to_raisin(std::string type_name, std::string topic_name)
