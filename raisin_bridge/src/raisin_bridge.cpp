@@ -1,4 +1,4 @@
-#include "raisin_bridge_helper/conversion.hpp"
+#include "raisin_bridge/raisin_bridge.hpp"
 
 void BridgeNode::connect()
 {
@@ -48,7 +48,7 @@ void BridgeNode::connect()
     }
   }
 
-  raisin_node_ = std::make_unique<raisin::Node>(raisin::Node(clientNetwork));
+  raisin_node_ = std::make_unique<raisin::Node>(clientNetwork);
 }
 
 void BridgeNode::register_ros2_to_raisin(std::string type_name, std::string topic_name)

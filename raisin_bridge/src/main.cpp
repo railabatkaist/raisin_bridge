@@ -17,7 +17,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "raisin_bridge_helper/conversion.hpp"
+#include "raisin_bridge/raisin_bridge.hpp"
 
 int main(int argc, char * argv[])
 {

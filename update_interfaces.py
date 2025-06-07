@@ -42,7 +42,7 @@ def get_base_type(type_str: str) -> str:
 
 
 def generate_package_xml(project_name, dependencies, destination_dir):
-    package_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'package.xml')
+    package_template = os.path.join(script_directory, 'templates', 'package.xml.in')
     with open(package_template, 'r') as template_file:
         package_content = template_file.read()
         
@@ -53,7 +53,7 @@ def generate_package_xml(project_name, dependencies, destination_dir):
         output_file.write(package_content)
 
 def generate_cmakelists_txt(project_name, dependencies, destination_dir):
-    cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'CMakeLists.txt')
+    cmakelists_template = os.path.join(script_directory, 'templates', 'CMakeLists.txt.in')
     with open(cmakelists_template, 'r') as template_file:
         cmakelists_content = template_file.read()
         
@@ -227,7 +227,7 @@ def create_interface(destination_dir, project_directory):
         pass  # Opening in 'w' mode clears the file content
     with open(os.path.join(destination_dir, 'conversion.cpp'), 'a') as output_file:
         output_file.write("#include <" + project_name + "/conversion.hpp>\n\n")
-        with open(os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
+        with open(os.path.join(script_directory, 'templates', 'conversion_hpp_register'), 'r') as conversion_hpp_register:
             output_file.write(conversion_hpp_register.read())
         pascal_snake_dict = dict()
         for msg_file in msg_files:
@@ -235,7 +235,7 @@ def create_interface(destination_dir, project_directory):
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
             pascal_snake_dict[pascal_str] = snake_str
-            conversion_cpp_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion.cpp')
+            conversion_cpp_template = os.path.join(script_directory, 'templates', 'conversion.cpp.in')
             with open(conversion_cpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
             conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
@@ -263,12 +263,12 @@ def create_interface(destination_dir, project_directory):
     with open(os.path.join(conversion_header_dir, 'conversion.hpp'), 'a') as output_file:
         for (dependency) in dependencies:
             output_file.write("#include <" + dependency + "/conversion.hpp>\n")
-        output_file.write('#include <raisin_bridge_helper/conversion.hpp>\n\n')
+        output_file.write('#include <raisin_bridge/raisin_bridge.hpp>\n\n')
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             snake_str = re.sub(r'(?<!^)(?=[A-Z][a-z]|(?<=[a-z])[A-Z]|(?<=[0-9])(?=[A-Z]))', '_', pascal_str).lower()
             snake_str = snake_str.replace("__", "_")
-            conversion_hpp_template = os.path.join(script_directory, 'src', 'templates', 'interfaces', 'conversion.hpp')
+            conversion_hpp_template = os.path.join(script_directory, 'templates', 'conversion.hpp.in')
             with open(conversion_hpp_template, 'r') as template_file:
                 conversion_content = template_file.read()
             conversion_content = conversion_content.replace('@@PROJECT_NAME@@', project_name)
@@ -286,23 +286,9 @@ def main():
     for topic_directory in topic_directories:        # as a dependency of raisin_master, these makes conflict in a library name.
         if (os.path.basename(topic_directory) in ["raisin_thread_pool"]):
             continue
-        create_interface(os.path.join(destination_dir, 'interfaces'), topic_directory)
+        create_interface(os.path.join(destination_dir), topic_directory)
 
     project_names = [os.path.basename(topic_directory) for topic_directory in topic_directories]
-
-    ## helpers for finding interfaces
-    helper_dir = os.path.join(destination_dir, 'helper')
-    os.makedirs(helper_dir, exist_ok=True)
-    helper_include_dir= os.path.join(helper_dir, 'include', 'raisin_bridge_helper')
-    os.makedirs(helper_include_dir, exist_ok=True)
-    package_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'package.xml')
-    shutil.copy(package_template, helper_dir)
-    cmakelists_template = os.path.join(script_directory, 'src', 'templates', 'helper', 'CMakeLists.txt')
-    shutil.copy(cmakelists_template, helper_dir)
-    conversion_hpp_content = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.hpp')
-    shutil.copy(conversion_hpp_content, helper_include_dir)
-    conversion_cpp_content = os.path.join(script_directory, 'src', 'templates', 'helper', 'conversion.cpp')
-    shutil.copy(conversion_cpp_content, helper_dir)
 
 if __name__ == '__main__':
     main()

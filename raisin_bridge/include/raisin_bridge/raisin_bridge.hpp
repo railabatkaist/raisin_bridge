@@ -1,5 +1,5 @@
-#ifndef RAISIN_BRIDGE_HELPER_
-#define RAISIN_BRIDGE_HELPER_
+#ifndef RAISIN_BRIDGE_
+#define RAISIN_BRIDGE_
 
 #include "rclcpp/rclcpp.hpp"
 #include "raisin_network/network.hpp"
@@ -42,4 +42,4 @@ class BridgeNode : public rclcpp::Node
   typedef void (* register_t) (BridgeNode * bridgeNode, std::string type_name, std::string topic_name);
 };
 
-#endif //RAISIN_BRIDGE_HELPER_
+#endif //RAISIN_BRIDGE_
