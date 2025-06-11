@@ -8,6 +8,7 @@ endif()
 set(CMAKE_PREFIX_PATH $ENV{RAISIN_WS}/install)
 find_package(raisin_network)
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
