@@ -3,7 +3,7 @@ void register_ros2_to_raisin(BridgeNode * bridgeNode, std::string topic_name){
     auto raisin_publisher = bridgeNode->raisin_node_->createPublisher<T_RAISIN>(topic_name);
     bridgeNode->raisin_publishers[topic_name] = raisin_publisher;
     bridgeNode->ros2_subscriptions[topic_name] = bridgeNode->create_subscription<T_ROS>(
-        topic_name, 10,
+        topic_name, rclcpp::QoS(3).best_effort(),
         [raisin_publisher](std::shared_ptr<T_ROS> msg) {
             raisin_publisher->publish(to_raisin_msg(*msg));  // Publish the same message
         }
@@ -12,7 +12,7 @@ void register_ros2_to_raisin(BridgeNode * bridgeNode, std::string topic_name){
 
 template <typename T_ROS, typename T_RAISIN>
 void register_raisin_to_ros2(BridgeNode * bridgeNode, std::string topic_name){
-    auto ros2_publisher = bridgeNode->create_publisher<T_ROS>(topic_name, 10);
+    auto ros2_publisher = bridgeNode->create_publisher<T_ROS>(topic_name, rclcpp::QoS(3).best_effort());
     bridgeNode->ros2_publishers[topic_name] = ros2_publisher;
     bridgeNode->raisin_subscribers[topic_name] = bridgeNode->raisin_node_->createSubscriber<T_RAISIN>(
         topic_name, bridgeNode->connection_,
