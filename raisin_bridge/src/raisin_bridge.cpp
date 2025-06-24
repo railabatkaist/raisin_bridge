@@ -3,7 +3,7 @@
 void BridgeNode::connect()
 {
   // Attempt to connect to the server
-  if (!connection_) {
+  while (!connection_) {
     if (networkType_ == 0) {
       connection_ = clientNetwork_->connect(peerId_);
     } else if (networkType_ == 1) {
