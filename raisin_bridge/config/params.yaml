@@ -6,8 +6,12 @@ bridge_node:
       peer_id: "railab_raibo" # for TCP
       peer_ip: "192.168.12.1" # for WEBSOCKET
       topics_ros2_to_raisin: # format should be the vector of "$type, $name"
-         ["std_msgs/msg/String, string1",
+         ["std_msgs/msg/String, chatter",
          "std_msgs/msg/String, string2"]
       topics_raisin_to_ros2: # format should be the vector of "$type, $name"
-         ["std_msgs/msg/String, string3",
+         ["std_msgs/msg/String, imu",
          "std_msgs/msg/String, string4"]
+      services_ros2_to_raisin: # format should be the vector of "$type, $name"
+         ["std_srvs/srv/Trigger, joint_test"]
+      services_raisin_to_ros2: # format should be the vector of "$type, $name"
+         [""]
