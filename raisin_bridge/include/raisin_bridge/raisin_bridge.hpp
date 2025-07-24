@@ -68,6 +68,10 @@ class BridgeNode : public rclcpp::Node
   std::map<std::string, std::any> ros2_subscriptions;
   std::map<std::string, std::any> raisin_publishers;
   std::map<std::string, std::any> raisin_subscribers;
+  std::map<std::string, std::any> ros2_services;
+  std::map<std::string, std::any> ros2_clients;
+  std::map<std::string, std::any> raisin_services;
+  std::map<std::string, std::any> raisin_clients;
   
   std::vector<void*> loaded_libraries_;  // or std::unordered_map if needed
   

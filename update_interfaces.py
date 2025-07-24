@@ -372,6 +372,7 @@ def create_conversion(destination_dir, project_directory):
             conversion_content = srv_conversion(srv_file)
             output_file.write(conversion_content)
 
+        # register msg
         output_file.write("extern \"C\" {")
         output_file.write("\n  void register_ros2_to_raisin_msg(BridgeNode * bridgeNode, std::string type_name, std::string topic_name)\n  {\n")
         for msg_file in msg_files:
@@ -383,6 +384,20 @@ def create_conversion(destination_dir, project_directory):
         for msg_file in msg_files:
             pascal_str = os.path.splitext(os.path.basename(msg_file))[0]
             output_file.write(f"    if(type_name == \"{pascal_str}\")\n      register_raisin_to_ros2_msg<{interface_name}::msg::{pascal_str}, raisin::{interface_name}::msg::{pascal_str}>(bridgeNode, topic_name);\n")
+        output_file.write("  }\n}\n")
+
+        # register srv
+        output_file.write("extern \"C\" {")
+        output_file.write("\n  void register_ros2_to_raisin_srv(BridgeNode * bridgeNode, std::string type_name, std::string service_name)\n  {\n")
+        for srv_file in srv_files:
+            pascal_str = os.path.splitext(os.path.basename(srv_file))[0]
+            output_file.write(f"    if(type_name == \"{pascal_str}\")\n      register_ros2_to_raisin_srv<{interface_name}::srv::{pascal_str}, raisin::{interface_name}::srv::{pascal_str}, {interface_name}::srv::{pascal_str}::Request, raisin::{interface_name}::srv::{pascal_str}::Request, {interface_name}::srv::{pascal_str}::Response, raisin::{interface_name}::srv::{pascal_str}::Response>(bridgeNode, service_name);\n")
+        output_file.write("  }\n}\n")
+        output_file.write("extern \"C\" {")
+        output_file.write("\n  void register_raisin_to_ros2_srv(BridgeNode * bridgeNode, std::string type_name, std::string service_name)\n  {\n")
+        for srv_file in srv_files:
+            pascal_str = os.path.splitext(os.path.basename(srv_file))[0]
+            output_file.write(f"    if(type_name == \"{pascal_str}\")\n      register_raisin_to_ros2_srv<{interface_name}::srv::{pascal_str}, raisin::{interface_name}::srv::{pascal_str}, {interface_name}::srv::{pascal_str}::Request, raisin::{interface_name}::srv::{pascal_str}::Request, {interface_name}::srv::{pascal_str}::Response, raisin::{interface_name}::srv::{pascal_str}::Response>(bridgeNode, service_name);\n")
         output_file.write("  }\n}")
 
 

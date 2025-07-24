@@ -22,27 +22,30 @@ void register_raisin_to_ros2_msg(BridgeNode * bridgeNode, std::string topic_name
     );
 }
 
-template <typename T_ROS, typename T_RAISIN>
+template <typename T_ROS, typename T_RAISIN, typename T_ROS_REQ, typename T_RAISIN_REQ, typename T_ROS_RES, typename T_RAISIN_RES>
 void register_ros2_to_raisin_srv(BridgeNode * bridgeNode, std::string service_name){
-    // auto raisin_service = bridgeNode->raisin_node_->createService<T_RAISIN>(service_name);
-    // bridgeNode->raisin_services[service_name] = raisin_service;
-    // bridgeNode->ros2_services[service_name] = bridgeNode->create_service<T_ROS>(
-    //     service_name, rclcpp::QoS(3).best_effort(),
-    //     [raisin_service](std::shared_ptr<T_ROS> msg) {
-    //         raisin_service->publish(to_raisin(*msg));  // Publish the same message
-    //     }
-    // );
+    auto raisin_client = bridgeNode->raisin_node_->createClient<T_RAISIN>(service_name, bridgeNode->connection_);
+    bridgeNode->raisin_clients[service_name] = raisin_client;
+    bridgeNode->ros2_services[service_name] = bridgeNode->create_service<T_ROS>(
+        service_name,
+        [raisin_client](std::shared_ptr<T_ROS_REQ> req, std::shared_ptr<T_ROS_RES> res) {
+          auto request = std::make_shared<T_RAISIN_REQ>(to_raisin(*req));
+          auto result = raisin_client->asyncSendRequest(request);
+            *res = to_ros(*result.get());
+        }
+    );
 }
 
-template <typename T_ROS, typename T_RAISIN>
+template <typename T_ROS, typename T_RAISIN, typename T_ROS_REQ, typename T_RAISIN_REQ, typename T_ROS_RES, typename T_RAISIN_RES>
 void register_raisin_to_ros2_srv(BridgeNode * bridgeNode, std::string service_name){
-    // auto ros2_service = bridgeNode->create_service<T_ROS>(service_name, rclcpp::QoS(3).best_effort());
-    // bridgeNode->ros2_services[service_name] = ros2_service;
-    // bridgeNode->raisin_services[service_name] = bridgeNode->raisin_node_->createService<T_RAISIN>(
-    //     service_name, bridgeNode->connection_,
-    //     std::bind([ros2_service](std::shared_ptr<T_RAISIN> msg) {
-    //       ros2_service->publish(to_ros(*msg));  // Publish the same message
-    //     }, _1)
-    // );
+    auto ros2_client = bridgeNode->create_client<T_ROS>(service_name);
+    bridgeNode->ros2_clients[service_name] = ros2_client;
+    bridgeNode->raisin_services[service_name] = bridgeNode->raisin_node_->createService<T_RAISIN>(
+        service_name,
+        std::bind([ros2_client](std::shared_ptr<T_RAISIN_REQ> req, std::shared_ptr<T_RAISIN_RES> res) {
+          auto request = std::make_shared<T_ROS_REQ>(to_ros(*req));
+          auto result = ros2_client->async_send_request(request);
+            *res = to_raisin(*result.get());
+        }, _1, _2)
+    );
 }
-
