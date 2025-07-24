@@ -1,0 +1,32 @@
+raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request to_raisin(const @@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request & ros_msg)
+{
+  raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request raisin_msg;
+  @@CONVERSION_TO_RAISIN_REQ@@
+  
+  return raisin_msg;
+}
+
+@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request to_ros(const raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request & raisin_msg)
+{
+  @@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request ros_msg;
+  @@CONVERSION_TO_ROS_REQ@@
+
+  return ros_msg;
+}
+
+raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response to_raisin(const @@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response & ros_msg)
+{
+  raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response raisin_msg;
+  @@CONVERSION_TO_RAISIN_RES@@
+  
+  return raisin_msg;
+}
+
+@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response to_ros(const raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response & raisin_msg)
+{
+  @@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response ros_msg;
+  @@CONVERSION_TO_ROS_RES@@
+
+  return ros_msg;
+}
+

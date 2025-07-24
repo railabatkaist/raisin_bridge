@@ -1,0 +1,5 @@
+#include <@@INTERFACE_NAME@@/msg/@@TYPE_SNAKE@@.hpp>
+#include <include/@@INTERFACE_NAME@@/msg/@@TYPE_SNAKE@@.hpp>
+raisin::@@INTERFACE_NAME@@::msg::@@TYPE_PASCAL@@ to_raisin(const @@INTERFACE_NAME@@::msg::@@TYPE_PASCAL@@ & ros_msg);
+@@INTERFACE_NAME@@::msg::@@TYPE_PASCAL@@ to_ros(const raisin::@@INTERFACE_NAME@@::msg::@@TYPE_PASCAL@@ & raisin_msg);
+

@@ -13,17 +13,18 @@ void BridgeNode::connect()
     }
     if (!connection_) {
       if (networkType_ == 0) {
-        std::cerr<<"Failed to connect to server " << peerId_ << " at " << netInterface_ <<std::endl;
+        std::cerr<<"Failed to connect to server " << peerId_ <<std::endl;
       } else if (networkType_ == 1) {
         std::cerr<<"Failed to connect to server " << peerIp_ <<std::endl;
       }
     } else {
       if (networkType_ == 0) {
-        std::cout<<"Connected to server " << peerId_ << " at " << netInterface_ <<std::endl;
+        std::cout<<"Connected to server " << peerId_ << " at " <<std::endl;
       } else if (networkType_ == 1) {
         std::cout<<"Connected to connect to server " << peerIp_ <<std::endl;
       }
     }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
 

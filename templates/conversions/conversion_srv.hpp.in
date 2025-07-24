@@ -1,0 +1,7 @@
+#include <@@INTERFACE_NAME@@/srv/@@TYPE_SNAKE@@.hpp>
+#include <include/@@INTERFACE_NAME@@/srv/@@TYPE_SNAKE@@.hpp>
+raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request to_raisin(const @@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request & ros_req);
+@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request to_ros(const raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Request & raisin_req);
+raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response to_raisin(const @@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response & ros_res);
+@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response to_ros(const raisin::@@INTERFACE_NAME@@::srv::@@TYPE_PASCAL@@::Response & raisin_res);
+

@@ -20,7 +20,7 @@ class BridgeNode : public rclcpp::Node
     this->declare_parameter<int>("network_type", 0);
     this->declare_parameter<std::string>("peer_id", "");
     this->declare_parameter<std::string>("peer_ip", "");
-    this->declare_parameter<std::string>("network_interface", "");
+    this->declare_parameter<std::vector<std::string>>("network_interface", std::vector<std::string>{""});
 
     this->get_parameter("id", id_);
     this->get_parameter("peer_id", peerId_);
@@ -60,7 +60,8 @@ class BridgeNode : public rclcpp::Node
   std::shared_ptr<raisin::Remote::Connection> connection_;
   std::shared_ptr<raisin::Network> clientNetwork_;
   int networkType_;
-  std::string id_, peerId_, peerIp_, netInterface_;
+  std::string id_, peerId_, peerIp_;
+  std::vector<std::string> netInterface_;
   rclcpp::TimerBase::SharedPtr connection_timer_;
 
   std::map<std::string, std::any> ros2_publishers;
