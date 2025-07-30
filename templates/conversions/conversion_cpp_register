@@ -29,9 +29,11 @@ void register_ros2_to_raisin_srv(BridgeNode * bridgeNode, std::string service_na
     bridgeNode->ros2_services[service_name] = bridgeNode->create_service<T_ROS>(
         service_name,
         [raisin_client](std::shared_ptr<T_ROS_REQ> req, std::shared_ptr<T_ROS_RES> res) {
-          auto request = std::make_shared<T_RAISIN_REQ>(to_raisin(*req));
-          auto result = raisin_client->asyncSendRequest(request);
-            *res = to_ros(*result.get());
+          if (raisin_client->isServiceAvailable()) {
+            auto request = std::make_shared<T_RAISIN_REQ>(to_raisin(*req));
+            auto result = raisin_client->asyncSendRequest(request);
+              *res = to_ros(*result.get());
+          }
         }
     );
 }
