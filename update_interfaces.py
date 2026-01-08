@@ -6,7 +6,9 @@ import shutil
 # Get an environment variable (returns None if not found)
 raisin_ws = os.getenv("RAISIN_WS")
 sys.path.append(raisin_ws)
-from raisin_workspace_setup import *
+from commands.setup import *
+import commands.globals as g 
+g.script_directory = raisin_ws
 
 script_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -207,12 +209,23 @@ def srv_conversion(srv_file):
 
     return conversion_content
 
-def find_dependencies(project_directory):
-    interface_name = os.path.basename(project_directory)
 
-    msg_files = find_msg_files(project_directory)
-    srv_files = find_srv_files(project_directory)
+def group_files_by_package(msg_files, srv_files):
+    package_map = {} # { 'package_path': {'msgs': [], 'srvs': []} }
 
+    for f in msg_files:
+        pkg_dir = os.path.dirname(os.path.dirname(f))
+        package_map.setdefault(pkg_dir, {'msgs': [], 'srvs': []})['msgs'].append(f)
+
+    for f in srv_files:
+        pkg_dir = os.path.dirname(os.path.dirname(f))
+        package_map.setdefault(pkg_dir, {'msgs': [], 'srvs': []})['srvs'].append(f)
+
+    return package_map
+
+
+def find_dependencies(interface_name, msg_files, srv_files):
+ 
     dependencies = set([])
 
     for msg_file in msg_files:
@@ -281,18 +294,18 @@ def find_dependencies(project_directory):
 
 
 
-def create_interface(destination_dir, project_directory):
+def create_interface(destination_dir, project_directory, msg_files, srv_files):
     interface_name = os.path.basename(project_directory)
     destination_dir = os.path.join(destination_dir, 'interfaces', interface_name)
-    dependencies = find_dependencies(project_directory)
+
+    dependencies = find_dependencies(interface_name, msg_files, srv_files)
 
     ## make directory and copy files
     msg_dir = os.path.join(destination_dir, 'msg')
     srv_dir = os.path.join(destination_dir, 'srv')
     os.makedirs(msg_dir, exist_ok=True)
     os.makedirs(srv_dir, exist_ok=True)
-    msg_files = find_msg_files(project_directory)
-    srv_files = find_srv_files(project_directory)
+
     for msg_file in msg_files:
         shutil.copy2(msg_file, msg_dir)
     for srv_file in srv_files:
@@ -322,14 +335,12 @@ def create_interface(destination_dir, project_directory):
 
 
 
-def create_conversion(destination_dir, project_directory):
+def create_conversion(destination_dir, project_directory, msg_files, srv_files):
     interface_name = os.path.basename(project_directory)
     destination_dir = os.path.join(destination_dir, 'conversions', interface_name)
-    dependencies = find_dependencies(project_directory)
 
-    ## make directory and configure interfaces
-    msg_files = find_msg_files(project_directory)
-    srv_files = find_srv_files(project_directory)
+    dependencies = find_dependencies(interface_name, msg_files, srv_files)
+
     conversion_header_dir = os.path.join(destination_dir, 'include', interface_name)
     os.makedirs(conversion_header_dir, exist_ok=True)
 
@@ -442,13 +453,24 @@ def main():
     os.makedirs(os.path.join(destination_dir, 'conversions'), exist_ok=True)
 
     # topic_directories = find_msg_directories(raisin_ws, ['messages'])
-    topic_directories = find_msg_directories(raisin_ws, ['install/messages'])
-    for topic_directory in topic_directories:        # as a dependency of raisin_master, these makes conflict in a library name.
-        if (os.path.basename(topic_directory) in ["raisin_thread_pool", "raisin_ffmpeg_image_transport"]):
-            continue
-        create_interface(os.path.join(destination_dir), topic_directory)
-        create_conversion(os.path.join(destination_dir), topic_directory)
+    # topic_directories = find_msg_directories(raisin_ws, ['install/messages/geometry_msgs', 'install/messages/std_msgs', 'install/messages/builtin_interfaces'])
 
+    msg_list, srv_list = find_interface_files(
+        search_directories=['install/messages'],
+        interface_types=['msg', 'srv']
+    )
+    
+    package_map = group_files_by_package(msg_list, srv_list)
+
+
+    for pkg_dir, files in package_map.items():
+        pkg_name = os.path.basename(pkg_dir)
+        
+        if pkg_name in ["raisin_thread_pool", "raisin_ffmpeg_image_transport"]:
+            continue
+            
+        create_interface(destination_dir, pkg_dir, files['msgs'], files['srvs'])
+        create_conversion(destination_dir, pkg_dir, files['msgs'], files['srvs'])
 
 if __name__ == '__main__':
     main()
