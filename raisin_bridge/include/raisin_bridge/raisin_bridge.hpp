@@ -1,18 +1,35 @@
 #ifndef RAISIN_BRIDGE_
 #define RAISIN_BRIDGE_
 
+#ifdef RAISIN_TIME_HEADER
+#include RAISIN_TIME_HEADER
+#endif
+
+#ifdef RAISIN_DURATION_HEADER
+#include RAISIN_DURATION_HEADER
+#endif
+
+#include <any>
+#include <chrono>
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include <dlfcn.h>
+
+#include "ament_index_cpp/get_package_prefix.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "raisin_network/network.hpp"
 #include "raisin_network/node.hpp"
-#include <any>
-#include "ament_index_cpp/get_package_prefix.hpp"
-#include <dlfcn.h>
 
 using namespace std::placeholders;  // To make _1, _2, etc., available
 
 class BridgeNode : public rclcpp::Node
 {
-  public:  
+ public:
   BridgeNode()
   : rclcpp::Node("bridge_node")
   {
@@ -20,7 +37,8 @@ class BridgeNode : public rclcpp::Node
     this->declare_parameter<int>("network_type", 0);
     this->declare_parameter<std::string>("peer_id", "");
     this->declare_parameter<std::string>("peer_ip", "");
-    this->declare_parameter<std::vector<std::string>>("network_interface", std::vector<std::string>{""});
+    this->declare_parameter<std::vector<std::string>>(
+      "network_interface", std::vector<std::string>{""});
 
     this->get_parameter("id", id_);
     this->get_parameter("peer_id", peerId_);
@@ -57,8 +75,8 @@ class BridgeNode : public rclcpp::Node
   void register_raisin_to_ros2_msg(std::string type_name, std::string topic_name);
   void register_ros2_to_raisin_srv(std::string type_name, std::string topic_name);
   void register_raisin_to_ros2_srv(std::string type_name, std::string topic_name);
-  
-  
+
+
   std::unique_ptr<raisin::Node> raisin_node_;
   std::shared_ptr<raisin::Remote::Connection> connection_;
   std::shared_ptr<raisin::Network> clientNetwork_;
@@ -75,9 +93,9 @@ class BridgeNode : public rclcpp::Node
   std::map<std::string, std::any> ros2_clients;
   std::map<std::string, std::any> raisin_services;
   std::map<std::string, std::any> raisin_clients;
-  
+
   std::vector<void*> loaded_libraries_;  // or std::unordered_map if needed
-  
+
   typedef void (* register_t) (BridgeNode * bridgeNode, std::string type_name, std::string topic_name);
 };
 

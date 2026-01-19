@@ -12,6 +12,13 @@ find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
+set(RAISIN_DURATION_HEADER_PATH "")
+set(RAISIN_TI1ME_HEADER_PATH "")
+if(DEFINED ENV{RAISIN_WS})
+  set(RAISIN_DURATION_HEADER_PATH "$ENV{RAISIN_WS}/install/include/builtin_interfaces/msg/duration.hpp")
+  set(RAISIN_TIME_HEADER_PATH "$ENV{RAISIN_WS}/install/include/builtin_interfaces/msg/time.hpp")
+endif()
+
 ## raisin bridge
 add_library(raisin_bridge src/raisin_bridge.cpp)
 
@@ -23,6 +30,18 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 target_include_directories(raisin_bridge PRIVATE  $ENV{RAISIN_WS}/install)
+if(RAISIN_DURATION_HEADER_PATH AND EXISTS "${RAISIN_DURATION_HEADER_PATH}")
+  target_compile_definitions(
+    raisin_bridge
+    PUBLIC
+    RAISIN_DURATION_HEADER=\"${RAISIN_DURATION_HEADER_PATH}\")
+endif()
+if(RAISIN_TIME_HEADER_PATH AND EXISTS "${RAISIN_TIME_HEADER_PATH}")
+  target_compile_definitions(
+    raisin_bridge
+    PUBLIC
+    RAISIN_TIME_HEADER=\"${RAISIN_TIME_HEADER_PATH}\")
+endif()
 
 ament_export_dependencies(ament_index_cpp)
 ament_export_targets(raisin_bridge_export HAS_LIBRARY_TARGET)
@@ -41,6 +60,18 @@ add_executable(raisin_bridge_node src/main.cpp)
 ament_target_dependencies(raisin_bridge_node rclcpp)
 target_link_libraries(raisin_bridge_node raisin_network raisin_bridge)
 target_include_directories(raisin_bridge_node PRIVATE  $ENV{RAISIN_WS}/install)
+if(RAISIN_DURATION_HEADER_PATH AND EXISTS "${RAISIN_DURATION_HEADER_PATH}")
+  target_compile_definitions(
+    raisin_bridge_node
+    PRIVATE
+    RAISIN_DURATION_HEADER=\"${RAISIN_DURATION_HEADER_PATH}\")
+endif()
+if(RAISIN_TIME_HEADER_PATH AND EXISTS "${RAISIN_TIME_HEADER_PATH}")
+  target_compile_definitions(
+    raisin_bridge_node
+    PRIVATE
+    RAISIN_TIME_HEADER=\"${RAISIN_TIME_HEADER_PATH}\")
+endif()
 
 install(TARGETS
 raisin_bridge_node
